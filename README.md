@@ -8,8 +8,6 @@
 ## 👉 在线体验
 [https://whale-zhou.github.io/bubble-orca/](https://whale-zhou.github.io/bubble-orca/)
 
-（这里可以插入1-2张工具界面的截图，比如进制转换/位运算的可视化效果，让读者一眼看到工具样子）
-
 
 ## ✨ 特性亮点
 ### 1. 进制转换「透明盒子」
@@ -108,8 +106,6 @@ A **fully interactive, visual** tool for cryptography and base conversion, desig
 
 ## 👉 Live Demo
 [https://whale-zhou.github.io/bubble-orca/](https://whale-zhou.github.io/bubble-orca/)
-
-(Add 1-2 screenshots of the tool interface here, e.g., base conversion/bitwise visualization, to show the tool at a glance)
 
 
 ## ✨ Feature Highlights
