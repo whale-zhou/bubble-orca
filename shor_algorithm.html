@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shor 算法整数分解</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4361ee',
+                        secondary: '#3a0ca3',
+                        accent: '#4cc9f0',
+                        neutral: '#f8f9fa',
+                        'neutral-dark': '#212529',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background-color: rgba(255, 255, 255, 0.7);
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .gradient-text {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                background-image: linear-gradient(45deg, #4361ee, #4cc9f0);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 font-sans text-neutral-dark">
+    <!-- 顶部导航 -->
+    <header class="glass-effect sticky top-0 z-50 shadow-md">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="text-3xl text-primary">🐋</div>
+                <h1 class="text-2xl font-bold gradient-text">Shor 算法整数分解</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- 欢迎区域 -->
+        <section class="text-center mb-16">
+            <div class="inline-block rounded-full bg-primary/10 p-3 mb-4">
+                <div class="text-5xl">🔬</div>
+            </div>
+            <h2 class="text-[clamp(2rem,5vw,3rem)] font-bold mb-4 text-shadow">Shor 算法演示</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+                Shor 算法是一种量子算法，由 Peter Shor 于 1994 年提出，用于整数分解。本页面使用经典计算机模拟实现，展示算法的基本原理。
+            </p>
+        </section>
+
+        <!-- Shor 算法界面 -->
+        <section class="mb-16 bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-3">整数分解</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <form id="shor-algorithm-form" class="space-y-6">
+                        <div class="space-y-2">
+                            <label for="shor-number" class="block font-medium">请输入要分解的整数</label>
+                            <input 
+                                type="number" 
+                                id="shor-number" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-300"
+                                min="2"
+                                placeholder="例如：15, 21, 35, 49, 121"
+                            >
+                            <p class="text-sm text-gray-500 mt-1">注意：由于是经典模拟实现，建议输入较小的整数（小于1000）</p>
+                        </div>
+                        <button 
+                            type="submit" 
+                            class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2"
+                        >
+                            <i class="fa fa-code-fork"></i>
+                            <span>分解</span>
+                        </button>
+                    </form>
+                </div>
+                <div id="shor-algorithm-result" class="hidden bg-neutral p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4">分解结果</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-600">输入整数</p>
+                            <p id="shor-result-number" class="font-mono text-lg"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">分解结果</p>
+                            <p id="shor-result-text" class="font-mono text-lg"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shor 算法说明 -->
+            <div class="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-100">
+                <h3 class="text-lg font-bold mb-4 text-primary">关于 Shor 算法</h3>
+                <p class="text-gray-700 mb-4">
+                    Shor 算法是一种量子算法，由 Peter Shor 于 1994 年提出，用于整数分解。该算法在量子计算机上可以指数级地加速整数分解过程，对密码学（特别是 RSA 加密）有重要影响。
+                </p>
+                <p class="text-gray-700 mb-4">
+                    本实现是经典计算机上的模拟版本，用于展示 Shor 算法的基本原理。在实际的量子计算机上，Shor 算法会使用量子傅里叶变换来更高效地寻找周期。
+                </p>
+                <p class="text-gray-700">
+                    算法步骤：
+                </p>
+                <ol class="list-decimal list-inside text-gray-700 pl-4 space-y-1">
+                    <li>选择一个与 N 互质的随机数 a</li>
+                    <li>使用量子傅里叶变换寻找 a 的阶 r（即最小的 r 使得 a^r ≡ 1 mod N）</li>
+                    <li>如果 r 是偶数且满足一定条件，计算可能的因子</li>
+                    <li>重复上述步骤直到找到因子</li>
+                </ol>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white/80 py-8 border-t">
+        <div class="container mx-auto px-4 text-center">
+            <div class="text-2xl mb-2">🔬</div>
+            <p class="text-gray-600 mb-4">Shor 算法演示 | 经典计算机模拟实现</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Shor 算法核心函数
+        function gcd(a, b) {
+            while (b !== 0) {
+                let temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        function isPrime(n) {
+            if (n <= 1) {
+                return false;
+            } else if (n <= 3) {
+                return true;
+            } else if (n % 2 === 0) {
+                return false;
+            }
+            let i = 3;
+            while (i * i <= n) {
+                if (n % i === 0) {
+                    return false;
+                }
+                i += 2;
+            }
+            return true;
+        }
+
+        function findPeriod(a, N) {
+            if (gcd(a, N) !== 1) {
+                return gcd(a, N);
+            }
+            
+            let r = 1;
+            while (Math.pow(a, r) % N !== 1) {
+                r += 1;
+            }
+            return r;
+        }
+
+        function shorAlgorithm(N) {
+            if (N <= 1) {
+                return "输入必须大于1";
+            } else if (N === 2) {
+                return "2 是素数";
+            } else if (N % 2 === 0) {
+                return `2 和 ${Math.floor(N/2)} 是 ${N} 的因子`;
+            }
+            
+            if (isPrime(N)) {
+                return `${N} 是素数`;
+            }
+            
+            while (true) {
+                let a = Math.floor(Math.random() * (N-2)) + 2;
+                let d = gcd(a, N);
+                
+                if (d > 1) {
+                    return `${d} 和 ${Math.floor(N/d)} 是 ${N} 的因子`;
+                }
+                
+                let r = findPeriod(a, N);
+                
+                if (r % 2 === 0 && Math.pow(a, Math.floor(r/2)) % N !== N-1) {
+                    let d1 = gcd(Math.pow(a, Math.floor(r/2)) - 1, N);
+                    let d2 = gcd(Math.pow(a, Math.floor(r/2)) + 1, N);
+                    
+                    if (d1 > 1 && d1 < N) {
+                        return `${d1} 和 ${Math.floor(N/d1)} 是 ${N} 的因子`;
+                    } else if (d2 > 1 && d2 < N) {
+                        return `${d2} 和 ${Math.floor(N/d2)} 是 ${N} 的因子`;
+                    }
+                }
+            }
+        }
+
+        // 表单提交处理
+        document.getElementById('shor-algorithm-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const number = parseInt(document.getElementById('shor-number').value);
+            
+            if (isNaN(number) || number < 2) {
+                alert('请输入大于等于2的整数');
+                return;
+            }
+            
+            // 显示加载状态
+            const resultDiv = document.getElementById('shor-algorithm-result');
+            const resultNumber = document.getElementById('shor-result-number');
+            const resultText = document.getElementById('shor-result-text');
+            
+            resultNumber.textContent = number;
+            resultText.textContent = '计算中...';
+            resultDiv.classList.remove('hidden');
+            
+            // 执行 Shor 算法
+            setTimeout(() => {
+                const result = shorAlgorithm(number);
+                resultText.textContent = result;
+            }, 100);
+        });
+    </script>
+</body>
+</html>

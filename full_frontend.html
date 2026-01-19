@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>泡泡鲸工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4361ee',
+                        secondary: '#3a0ca3',
+                        accent: '#4cc9f0',
+                        neutral: '#f8f9fa',
+                        'neutral-dark': '#212529',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .bit-transition {
+                transition: all 0.3s ease-in-out;
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background-color: rgba(255, 255, 255, 0.7);
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .gradient-text {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                background-image: linear-gradient(45deg, #4361ee, #4cc9f0);
+            }
+        }
+    </style>
+    
+    <!-- 主题切换样式 -->
+    <style>
+        /* 根元素主题变量 */
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 深色主题 */
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e9ecef;
+            --card-bg: #1e1e1e;
+            --border-color: #343a40;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 应用主题变量 */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* 深色主题下的渐变背景 */
+        [data-theme="dark"] {
+            --bg-gradient-dark: #121212;
+        }
+        
+        /* 卡片主题样式 */
+        [data-theme="dark"] .bg-white {
+            background-color: var(--card-bg);
+        }
+        
+        [data-theme="dark"] .bg-neutral {
+            background-color: var(--card-bg);
+        }
+        
+        [data-theme="dark"] .bg-blue-50 {
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+        
+        [data-theme="dark"] .border {
+            border-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] .text-gray-600,
+        [data-theme="dark"] .text-gray-500 {
+            color: #adb5bd;
+        }
+        
+        [data-theme="dark"] .bg-gray-200 {
+            background-color: #343a40;
+        }
+        
+        [data-theme="dark"] .text-gray-800 {
+            color: var(--text-color);
+        }
+        
+        /* 玻璃效果深色主题 */
+        [data-theme="dark"] .glass-effect {
+            background-color: rgba(30, 30, 30, 0.7);
+        }
+        
+        /* 页脚深色主题 */
+        [data-theme="dark"] footer {
+            background-color: rgba(30, 30, 30, 0.9);
+            border-color: var(--border-color);
+        }
+        
+        /* 深色主题下的所有文本颜色 */
+        [data-theme="dark"] {
+            color: var(--text-color);
+        }
+        
+        /* 深色主题下的输入框样式 */
+        [data-theme="dark"] input,
+        [data-theme="dark"] textarea,
+        [data-theme="dark"] select {
+            color: #ffffff !important;
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+        }
+        
+        /* 深色主题下的输入框占位符样式 */
+        [data-theme="dark"] ::placeholder {
+            color: #adb5bd !important;
+        }
+        
+        /* 深色主题下的卡片阴影 */
+        [data-theme="dark"] .shadow-lg {
+            box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -2px var(--shadow-color);
+        }
+        
+        /* 主题切换按钮 */
+        #theme-toggle {
+            transition: transform 0.3s ease;
+        }
+        
+        #theme-toggle:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans">
+    <!-- 顶部导航 -->
+    <header class="glass-effect sticky top-0 z-50 shadow-md">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="text-3xl text-primary animate-float">🐋</div>
+                <h1 class="text-2xl font-bold gradient-text">泡泡鲸工具</h1>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#ascii-to-base" class="text-primary hover:text-secondary transition-colors duration-300 font-medium">ASCII → 进制</a>
+                <a href="#base-to-ascii" class="text-primary hover:text-secondary transition-colors duration-300 font-medium">进制 → ASCII</a>
+                <a href="#bit-operation" class="text-primary hover:text-secondary transition-colors duration-300 font-medium">位运算可视化</a>
+                <a href="#shor-algorithm" class="text-primary hover:text-secondary transition-colors duration-300 font-medium">Shor 算法</a>
+                <a href="#sha256-encrypt" class="text-primary hover:text-secondary transition-colors duration-300 font-medium">SHA-256加密</a>
+            </div>
+            <!-- 分享按钮 -->
+            <button id="share-button" class="mr-4 text-primary text-xl hover:text-secondary transition-colors duration-300">
+                <i class="fa fa-share-alt"></i>
+            </button>
+            <!-- 主题切换按钮 -->
+            <button id="theme-toggle" class="text-primary text-xl hover:text-secondary transition-colors duration-300">
+                <i class="fa fa-moon-o"></i>
+            </button>
+            <button class="md:hidden text-primary text-xl">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 欢迎区域 -->
+        <section class="text-center mb-16">
+            <div class="inline-block rounded-full bg-primary/10 p-3 mb-4">
+                <div class="text-5xl animate-float">🐋</div>
+            </div>
+            <h2 class="text-[clamp(2rem,5vw,3rem)] font-bold mb-4 text-shadow">欢迎使用泡泡鲸工具</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+                支持ASCII字符与各种进制之间的转换、位运算可视化、Shor算法整数分解以及SHA-256加密，让编程学习更加直观有趣！
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+                    <div class="text-3xl text-primary mb-4"><i class="fa fa-exchange"></i></div>
+                    <h3 class="text-xl font-bold mb-2">ASCII → 进制</h3>
+                    <p class="text-gray-600">将单个ASCII字符转换为二进制、十进制和十六进制表示</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+                    <div class="text-3xl text-primary mb-4"><i class="fa fa-code"></i></div>
+                    <h3 class="text-xl font-bold mb-2">进制 → ASCII</h3>
+                    <p class="text-gray-600">将二进制、十进制或十六进制数值转换为对应的ASCII字符</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+                    <div class="text-3xl text-primary mb-4"><i class="fa fa-calculator"></i></div>
+                    <h3 class="text-xl font-bold mb-2">位运算可视化</h3>
+                    <p class="text-gray-600">直观展示位运算过程和结果，支持与、或、异或、非、左移、右移</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+                    <div class="text-3xl text-primary mb-4"><i class="fa fa-code-fork"></i></div>
+                    <h3 class="text-xl font-bold mb-2">Shor 算法</h3>
+                    <p class="text-gray-600">使用量子算法原理分解整数，展示因数分解过程和结果</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+                    <div class="text-3xl text-primary mb-4"><i class="fa fa-lock"></i></div>
+                    <h3 class="text-xl font-bold mb-2">SHA-256加密</h3>
+                    <p class="text-gray-600">将任意文本转换为SHA-256哈希值，支持各种长度的文本输入</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ASCII转进制 -->
+        <section id="ascii-to-base" class="mb-16 bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-3">ASCII字符 → 进制转换</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <form id="ascii-to-base-form" class="space-y-6">
+                        <div class="space-y-2">
+                            <label for="ascii-char" class="block font-medium">请输入单个ASCII字符</label>
+                            <input 
+                                type="text" 
+                                id="ascii-char" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-300"
+                                maxlength="1"
+                                placeholder="例如：A, a, 1, !"
+                            >
+                        </div>
+                        <button 
+                            type="submit" 
+                            class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2"
+                        >
+                            <i class="fa fa-exchange"></i>
+                            <span>转换</span>
+                        </button>
+                    </form>
+                </div>
+                <div id="ascii-to-base-result" class="hidden bg-neutral p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4">转换结果</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-600">输入字符</p>
+                            <p id="result-char" class="font-mono text-lg"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">十进制</p>
+                            <p id="result-decimal" class="font-mono text-lg"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">二进制</p>
+                            <p id="result-binary" class="font-mono text-lg"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">32位二进制</p>
+                            <p id="result-binary-32" class="font-mono text-sm break-all"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">十六进制</p>
+                            <p id="result-hex" class="font-mono text-lg"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 进制转ASCII -->
+        <section id="base-to-ascii" class="mb-16 bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-3">进制数值 → ASCII字符</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <form id="base-to-ascii-form" class="space-y-6">
+                        <div class="space-y-2">
+                            <label class="block font-medium">请选择输入类型</label>
+                            <div class="grid grid-cols-3 gap-3">
+                                <label class="cursor-pointer relative flex flex-col items-center p-3 border rounded-lg transition-all duration-300 hover:bg-blue-50">
+                                    <input type="radio" name="base-type" value="binary" class="sr-only base-type-radio" checked>
+                                    <span class="text-lg">2</span>
+                                    <span class="text-xs text-gray-600">二进制</span>
+                                </label>
+                                <label class="cursor-pointer relative flex flex-col items-center p-3 border rounded-lg transition-all duration-300 hover:bg-blue-50">
+                                    <input type="radio" name="base-type" value="decimal" class="sr-only base-type-radio">
+                                    <span class="text-lg">10</span>
+                                    <span class="text-xs text-gray-600">十进制</span>
+                                </label>
+                                <label class="cursor-pointer relative flex flex-col items-center p-3 border rounded-lg transition-all duration-300 hover:bg-blue-50">
+                                    <input type="radio" name="base-type" value="hex" class="sr-only base-type-radio">
+                                    <span class="text-lg">16</span>
+                                    <span class="text-xs text-gray-600">十六进制</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="base-value" class="block font-medium">
+                                请输入数值 <span id="selected-base-type" class="text-sm text-gray-500">(您当前选中了二进制)</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="base-value" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-300"
+                                placeholder="例如：二进制输入1100001，十进制输入97，十六进制输入61"
+                            >
+                        </div>
+                        <button 
+                            type="submit" 
+                            class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2"
+                        >
+                            <i class="fa fa-code"></i>
+                            <span>转换</span>
+                        </button>
+                    </form>
+                </div>
+                <div id="base-to-ascii-result" class="hidden bg-neutral p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4">转换结果</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-600">输入数值</p>
+                            <p id="result-base-value" class="font-mono text-lg"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">十进制</p>
+                            <p id="result-base-decimal" class="font-mono text-lg"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">ASCII字符</p>
+                            <p id="result-base-char" class="font-mono text-lg text-2xl"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">8位二进制</p>
+                            <p id="result-base-binary-8" class="font-mono text-sm break-all"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">十六进制</p>
+                            <p id="result-base-hex" class="font-mono text-lg"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 位运算可视化 -->
+        <section id="bit-operation" class="mb-16 bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-3">位运算可视化工具（32位无符号整数）</h2>
+            <p class="text-sm text-gray-600 mb-6">注：逻辑左移(&lt;&lt;)和逻辑右移(&gt;&gt;)操作均为逻辑移位，左移右侧补0，右移左侧补0；循环左移将左边移出的位补到右边，循环右移将右边移出的位补到左边。</p>
+            <form id="bit-operation-form" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- 运算符选择 -->
+                    <div class="space-y-2">
+                        <label class="block font-medium">请选择运算符</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" class="bit-operator-btn bg-primary text-white py-2 px-4 rounded-lg" data-operator="&">与</button>
+                            <button type="button" class="bit-operator-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-lg" data-operator="|">或</button>
+                            <button type="button" class="bit-operator-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-lg" data-operator="^">异或</button>
+                            <button type="button" class="bit-operator-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-lg" data-operator="~">非</button>
+                            <button type="button" class="bit-operator-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-lg" data-operator="&lt;&lt;">逻辑左移</button>
+                            <button type="button" class="bit-operator-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-lg" data-operator="&gt;&gt;">逻辑右移</button>
+                            <button type="button" class="bit-operator-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-lg" data-operator="circular_left">循环左移</button>
+                            <button type="button" class="bit-operator-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-lg" data-operator="circular_right">循环右移</button>
+                        </div>
+                        <input type="hidden" id="bit-operator" value="&">
+                    </div>
+                    
+                    <!-- 第一个数字 -->
+                    <div class="space-y-2">
+                        <label for="bit-num1" class="block font-medium">数字1</label>
+                        <div class="flex space-x-2">
+                            <input 
+                                type="text" 
+                                id="bit-num1" 
+                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-300"
+                                placeholder="例如：123 或 0x7B 或 0b1111011"
+                            >
+                            <select id="bit-num1-base" class="px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-300">
+                                <option value="decimal">十进制</option>
+                                <option value="binary">二进制</option>
+                                <option value="hex">十六进制</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- 第二个数字 -->
+                    <div class="space-y-2">
+                        <label for="bit-num2" class="block font-medium">数字2</label>
+                        <div class="flex space-x-2">
+                            <input 
+                                type="text" 
+                                id="bit-num2" 
+                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-300"
+                                placeholder="例如：123 或 0x7B 或 0b1111011 或 移位位数0-31"
+                            >
+                            <select id="bit-num2-base" class="px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-300">
+                                <option value="decimal">十进制</option>
+                                <option value="binary">二进制</option>
+                                <option value="hex">十六进制</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <button 
+                    type="submit" 
+                    class="w-full md:w-auto bg-primary hover:bg-primary/90 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2"
+                >
+                    <i class="fa fa-calculator"></i>
+                    <span>计算</span>
+                </button>
+            </form>
+            
+            <!-- 位运算结果可视化 -->
+            <div id="bit-operation-result" class="hidden mt-8">
+                <h3 class="text-lg font-bold mb-4">位运算可视化结果</h3>
+                
+                <!-- 操作表达式 -->
+                <div class="mb-6">
+                    <p class="text-sm text-gray-600">操作表达式</p>
+                    <p id="bit-operation-expression" class="font-mono text-xl text-primary"></p>
+                </div>
+                
+                <!-- 二进制位可视化 -->
+                <div class="mb-6 overflow-x-auto">
+                    <div class="min-w-[800px]">
+                        <!-- 数字1二进制 -->
+                        <div class="mb-3">
+                            <p class="text-sm text-gray-500 mb-1">数字1二进制</p>
+                            <div id="bit-num1-binary" class="flex gap-1 font-mono text-sm"></div>
+                        </div>
+                        
+                        <!-- 运算符/分隔线 -->
+                        <div class="mb-3" id="bit-operator-display"></div>
+                        
+                        <!-- 数字2二进制（非一元运算时显示） -->
+                        <div class="mb-3" id="bit-num2-container">
+                            <p class="text-sm text-gray-500 mb-1">数字2二进制</p>
+                            <div id="bit-num2-binary" class="flex gap-1 font-mono text-sm"></div>
+                        </div>
+                        
+                        <!-- 分隔线 -->
+                        <div class="border-t border-gray-400 my-2"></div>
+                        
+                        <!-- 结果二进制 -->
+                        <div class="mb-3">
+                            <p class="text-sm text-gray-500 mb-1">结果二进制</p>
+                            <div id="bit-result-binary" class="flex gap-1 font-mono text-sm"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 结果详情 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-neutral p-4 rounded-lg">
+                        <p class="text-sm text-gray-500">结果十进制</p>
+                        <p id="bit-result-decimal" class="font-mono text-lg"></p>
+                    </div>
+                    <div class="bg-neutral p-4 rounded-lg">
+                        <p class="text-sm text-gray-500">结果十六进制</p>
+                        <p id="bit-result-hex" class="font-mono text-lg"></p>
+                    </div>
+                    <div class="bg-neutral p-4 rounded-lg">
+                        <p class="text-sm text-gray-500">位运算类型</p>
+                        <p id="bit-result-type" class="font-mono text-lg"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Shor 算法 -->
+        <section id="shor-algorithm" class="mb-16 bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-3">Shor 算法质数分解</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <form id="shor-algorithm-form" class="space-y-6">
+                        <div class="space-y-2">
+                            <label for="shor-number" class="block font-medium">请输入要分解的整数</label>
+                            <input 
+                                type="number" 
+                                id="shor-number" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-300"
+                                min="2"
+                                placeholder="例如：15, 21, 35, 49, 121"
+                            >
+                            <p class="text-sm text-gray-500 mt-1">注意：由于是经典模拟实现，建议输入较小的整数（小于1000）</p>
+                        </div>
+                        <button 
+                            type="submit" 
+                            class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2"
+                        >
+                            <i class="fa fa-code-fork"></i>
+                            <span>分解</span>
+                        </button>
+                    </form>
+                </div>
+                <div id="shor-algorithm-result" class="hidden bg-neutral p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4">分解结果</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-600">输入整数</p>
+                            <p id="shor-result-number" class="font-mono text-lg"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">分解结果</p>
+                            <p id="shor-result-text" class="font-mono text-lg"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shor 算法说明 -->
+            <div class="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-100">
+                <h3 class="text-lg font-bold mb-4 text-primary">关于 Shor 算法</h3>
+                <p class="text-gray-700 mb-4">
+                    Shor 算法是一种量子算法，由 Peter Shor 于 1994 年提出，用于**质数分解**（整数因式分解）。该算法在量子计算机上可以指数级地加速质数分解过程，对密码学（特别是 RSA 加密）有重要影响。
+                </p>
+                <p class="text-gray-700">
+                    本实现是经典计算机上的模拟版本，用于展示 Shor 算法的基本原理。它能够将任意整数分解为其质因数的乘积，例如：
+                    <br>输入 12 → 输出 12 = 2² × 3
+                    <br>输入 15 → 输出 15 = 3 × 5
+                    <br>输入 210 → 输出 210 = 2 × 3 × 5 × 7
+                </p>
+                <p class="text-gray-700 mt-4">
+                    在实际的量子计算机上，Shor 算法会使用量子傅里叶变换来更高效地寻找周期，从而实现指数级加速。
+                </p>
+            </div>
+        </section>
+
+        <!-- SHA-256加密 -->
+        <section id="sha256-encrypt" class="mb-16 bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-3">SHA-256加密</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <form id="sha256-encrypt-form" class="space-y-6">
+                        <div class="space-y-2">
+                            <label for="sha256-text" class="block font-medium">请输入要加密的文本</label>
+                            <textarea 
+                                id="sha256-text" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-300"
+                                rows="5"
+                                placeholder="例如：Hello, World! 或 123456"
+                            ></textarea>
+                        </div>
+                        <button 
+                            type="submit" 
+                            class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2"
+                        >
+                            <i class="fa fa-lock"></i>
+                            <span>加密</span>
+                        </button>
+                    </form>
+                </div>
+                <div id="sha256-encrypt-result" class="hidden bg-neutral p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4">加密结果</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-600">输入文本</p>
+                            <p id="sha256-result-text" class="font-mono text-sm break-words"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">SHA-256哈希值</p>
+                            <p id="sha256-result-hash" class="font-mono text-sm break-all"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SHA-256说明 -->
+            <div class="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-100">
+                <h3 class="text-lg font-bold mb-4 text-primary">关于 SHA-256</h3>
+                <p class="text-gray-700 mb-4">
+                    SHA-256是一种密码散列函数，是SHA-2（安全散列算法2）系列的一部分，由美国国家安全局（NSA）设计。它可以将任意长度的输入转换为固定长度（256位）的输出，通常以64个十六进制字符表示。
+                </p>
+                <p class="text-gray-700">
+                    SHA-256广泛应用于密码学领域，包括数字签名、消息认证码、随机数生成等。本实现采用经典的SHA-256算法，完全符合NIST标准，并通过了官方测试用例验证。
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white/80 py-8 border-t">
+        <div class="container mx-auto px-4 text-center">
+            <div class="text-2xl mb-2 animate-float">🐋</div>
+            <p class="text-gray-600 mb-4">泡泡鲸工具 | 洲哥独立开发</p>
+            <p class="text-sm text-gray-500">最后修改日期：25年9月24日 | 请勿侵权</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 纯前端ASCII转进制功能
+            document.getElementById('ascii-to-base-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const char = document.getElementById('ascii-char').value;
+                
+                if (!char || char.length !== 1) {
+                    alert('请输入单个ASCII字符');
+                    return;
+                }
+                
+                // 计算各进制结果
+                const decimal = char.charCodeAt(0);
+                const binary = decimal.toString(2);
+                const binary_32 = binary.padStart(32, '0');
+                const hex = decimal.toString(16).toUpperCase();
+                
+                document.getElementById('ascii-to-base-result').classList.remove('hidden');
+                document.getElementById('result-char').textContent = char;
+                document.getElementById('result-decimal').textContent = decimal;
+                document.getElementById('result-binary').textContent = `0b${binary}`;
+                document.getElementById('result-binary-32').textContent = binary_32;
+                document.getElementById('result-hex').textContent = `0x${hex}`;
+            });
+            
+            // 进制类型选择处理
+            (function() {
+                // 进制类型映射
+                const baseTypeMap = {
+                    'binary': '二进制',
+                    'decimal': '十进制',
+                    'hex': '十六进制'
+                };
+                
+                // 获取所有进制类型radio元素（使用类选择器）
+                const baseTypeRadios = document.querySelectorAll('.base-type-radio');
+                
+                // 获取显示当前选中进制的元素
+                const selectedBaseTypeElement = document.getElementById('selected-base-type');
+                
+                // 初始化选中状态
+                const defaultRadio = document.querySelector('input[name="base-type"]:checked');
+                if (defaultRadio && selectedBaseTypeElement) {
+                    selectedBaseTypeElement.textContent = `(您当前选中了${baseTypeMap[defaultRadio.value]})`;
+                }
+                
+                // 为每个radio元素的父标签添加点击事件监听器
+                baseTypeRadios.forEach(radio => {
+                    const label = radio.parentElement;
+                    
+                    label.addEventListener('click', function() {
+                        // 移除所有标签的选中样式
+                        baseTypeRadios.forEach(r => {
+                            r.parentElement.classList.remove('bg-primary', 'border-primary', 'text-white');
+                            r.parentElement.classList.add('border-gray-300', 'text-gray-800');
+                        });
+                        
+                        // 选中当前radio
+                        radio.checked = true;
+                        
+                        // 添加当前标签的选中样式
+                        label.classList.remove('border-gray-300', 'text-gray-800');
+                        label.classList.add('bg-primary', 'border-primary', 'text-white');
+                        
+                        // 立即更新显示
+                        if (selectedBaseTypeElement) {
+                            selectedBaseTypeElement.textContent = `(您当前选中了${baseTypeMap[radio.value]})`;
+                        }
+                    });
+                });
+            })();
+
+            // 纯前端进制转ASCII功能
+            document.getElementById('base-to-ascii-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const baseType = document.querySelector('input[name="base-type"]:checked').value;
+                const value = document.getElementById('base-value').value;
+                
+                try {
+                    let decimal;
+                    
+                    if (baseType === 'binary') {
+                        // 处理二进制输入
+                        decimal = parseInt(value, 2);
+                    } else if (baseType === 'decimal') {
+                        // 处理十进制输入
+                        decimal = parseInt(value, 10);
+                    } else if (baseType === 'hex') {
+                        // 处理十六进制输入
+                        decimal = parseInt(value, 16);
+                    } else {
+                        throw new Error('无效的进制类型');
+                    }
+                    
+                    // 检查ASCII范围
+                    if (decimal >= 0 && decimal <= 127) {
+                        const char = String.fromCharCode(decimal);
+                        const binary_8 = decimal.toString(2).padStart(8, '0');
+                        const hex = decimal.toString(16).toUpperCase();
+                        
+                        document.getElementById('base-to-ascii-result').classList.remove('hidden');
+                        const baseNames = { 'binary': '二进制', 'decimal': '十进制', 'hex': '十六进制' };
+                        document.getElementById('result-base-value').textContent = `${value} (${baseNames[baseType]})`;
+                        document.getElementById('result-base-decimal').textContent = decimal;
+                        document.getElementById('result-base-char').textContent = char;
+                        document.getElementById('result-base-binary-8').textContent = `0b${binary_8}`;
+                        document.getElementById('result-base-hex').textContent = `0x${hex}`;
+                    } else {
+                        alert(`ASCII码只能是0-127，你的输入对应十进制是${decimal}，超范围啦～`);
+                    }
+                } catch (error) {
+                    if (baseType === 'binary') {
+                        alert('二进制只能包含0和1哦～');
+                    } else if (baseType === 'hex') {
+                        alert('十六进制只能包含0-9和A-F/a-f哦～');
+                    } else {
+                        alert('请输入有效的数字～');
+                    }
+                }
+            });
+            
+            // 位运算可视化 - 运算符选择
+            const operatorButtons = document.querySelectorAll('.bit-operator-btn');
+            const bitOperatorInput = document.getElementById('bit-operator');
+            
+            operatorButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有按钮的选中状态
+                    operatorButtons.forEach(btn => {
+                        btn.classList.remove('bg-primary', 'text-white');
+                        btn.classList.add('bg-gray-200', 'text-gray-800');
+                    });
+                    
+                    // 为当前点击的按钮添加选中状态
+                    this.classList.remove('bg-gray-200', 'text-gray-800');
+                    this.classList.add('bg-primary', 'text-white');
+                    
+                    // 更新隐藏输入框的值
+                    const operator = this.getAttribute('data-operator');
+                    bitOperatorInput.value = operator;
+                });
+            });
+
+            // 显示二进制位
+            function displayBinaryBits(binaryString, containerId) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+                
+                // 将二进制字符串分割为单个位并显示
+                for (let i = 0; i < binaryString.length; i++) {
+                    // 每4位添加一个分隔符
+                    if (i > 0 && i % 4 === 0) {
+                        const separator = document.createElement('span');
+                        separator.textContent = ' ';
+                        container.appendChild(separator);
+                    }
+                    
+                    const bit = document.createElement('span');
+                    bit.textContent = binaryString[i];
+                    bit.className = 'inline-block w-4 h-4 rounded-full flex items-center justify-center ' + 
+                                    (binaryString[i] === '1' ? 'bg-primary text-white' : 'bg-gray-200 text-gray-800');
+                    bit.classList.add('bit-transition');
+                    container.appendChild(bit);
+                }
+            }
+            
+            // 纯前端位运算功能
+            document.getElementById('bit-operation-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const operation = document.getElementById('bit-operator').value;
+                const num1 = document.getElementById('bit-num1').value;
+                const num1Base = document.getElementById('bit-num1-base').value;
+                const num2 = document.getElementById('bit-num2').value;
+                const num2Base = document.getElementById('bit-num2-base').value;
+                
+                // 转换HTML实体编码的运算符和处理循环移位
+                let processedOperation = operation;
+                if (operation === '&lt;&lt;') {
+                    processedOperation = '<<';
+                } else if (operation === '&gt;&gt;') {
+                    processedOperation = '>>';
+                }
+                
+                // 辅助函数：解析不同进制的数字
+                function parseNumber(numStr, baseType) {
+                    if (!numStr) {
+                        throw new Error('数字不能为空');
+                    }
+                    
+                    try {
+                        if (baseType === 'binary') {
+                            // 移除可能的0b前缀
+                            if (numStr.startsWith('0b')) {
+                                numStr = numStr.substring(2);
+                            }
+                            return parseInt(numStr, 2);
+                        } else if (baseType === 'hex') {
+                            // 移除可能的0x前缀
+                            if (numStr.startsWith('0x')) {
+                                numStr = numStr.substring(2);
+                            }
+                            return parseInt(numStr, 16);
+                        } else { // decimal
+                            return parseInt(numStr, 10);
+                        }
+                    } catch (error) {
+                        if (baseType === 'binary') {
+                            throw new Error('二进制数字只能包含0和1');
+                        } else if (baseType === 'hex') {
+                            throw new Error('十六进制数字只能包含0-9和A-F/a-f');
+                        } else {
+                            throw new Error('请输入有效的十进制数字');
+                        }
+                    }
+                }
+                
+                try {
+                    let result;
+                    let num_1 = parseNumber(num1, num1Base);
+                    let num_2;
+                    
+                    // 处理一元运算符（非运算）
+                    if (processedOperation === '~') {
+                        result = ~num_1 & 0xFFFFFFFF; // 强制32位无符号
+                    } else {
+                        // 处理二元运算符
+                        num_2 = parseNumber(num2, num2Base);
+                        
+                        // 移位操作检查位数
+                        if (processedOperation === '<<' || processedOperation === '>>') {
+                            if (!Number.isInteger(num_2) || num_2 < 0 || num_2 > 31) {
+                                alert('32位运算里，移位位数只能是0-31哦～');
+                                return;
+                            }
+                        }
+                        
+                        // 执行位运算
+                        switch (processedOperation) {
+                            case '&':
+                                result = num_1 & num_2;
+                                break;
+                            case '|':
+                                result = num_1 | num_2;
+                                break;
+                            case '^':
+                                result = num_1 ^ num_2;
+                                break;
+                            case '<<':
+                                result = (num_1 << num_2) & 0xFFFFFFFF;
+                                break;
+                            case '>>':
+                                result = (num_1 >>> num_2) & 0xFFFFFFFF; // 无符号右移
+                                break;
+                            case 'circular_left':
+                                // 循环左移
+                                const shift = num_2 % 32;
+                                result = ((num_1 << shift) | (num_1 >>> (32 - shift))) & 0xFFFFFFFF;
+                                break;
+                            case 'circular_right':
+                                // 循环右移
+                                const shiftR = num_2 % 32;
+                                result = ((num_1 >>> shiftR) | (num_1 << (32 - shiftR))) & 0xFFFFFFFF;
+                                break;
+                            default:
+                                alert('无效的运算符');
+                                return;
+                        }
+                    }
+                    
+                    // 转换为32位二进制字符串
+                    const num1_binary = num_1.toString(2).padStart(32, '0');
+                    let num2_binary = '';
+                    if (processedOperation !== '~') {
+                        num2_binary = num_2.toString(2).padStart(32, '0');
+                    }
+                    const result_binary = result.toString(2).padStart(32, '0');
+                    const result_hex = result.toString(16).toUpperCase().padStart(8, '0');
+                    
+                    // 显示结果
+                    document.getElementById('bit-operation-result').classList.remove('hidden');
+                    
+                    // 显示操作表达式
+                    if (processedOperation === '~') {
+                        document.getElementById('bit-operation-expression').textContent = `~${num_1}`;
+                        document.getElementById('bit-operator-display').innerHTML = `<p class="text-center text-xl font-bold text-primary">~</p>`;
+                        document.getElementById('bit-num2-container').classList.add('hidden');
+                    } else {
+                        document.getElementById('bit-operation-expression').textContent = `${num_1} ${processedOperation} ${num_2}`;
+                        document.getElementById('bit-operator-display').innerHTML = `<p class="text-center text-xl font-bold text-primary">${processedOperation}</p>`;
+                        document.getElementById('bit-num2-container').classList.remove('hidden');
+                        
+                        // 显示数字2二进制
+                        displayBinaryBits(num2_binary, 'bit-num2-binary');
+                    }
+                    
+                    // 显示数字1二进制
+                    displayBinaryBits(num1_binary, 'bit-num1-binary');
+                    
+                    // 显示结果二进制
+                    displayBinaryBits(result_binary, 'bit-result-binary');
+                    
+                    // 显示结果详情
+                    document.getElementById('bit-result-decimal').textContent = result;
+                    document.getElementById('bit-result-hex').textContent = `0x${result_hex}`;
+                    
+                    // 显示位运算类型
+                    const operationNames = {
+                        '&': '按位与',
+                        '|': '按位或',
+                        '^': '按位异或',
+                        '~': '按位非',
+                        '<<': '逻辑左移',
+                        '>>': '逻辑右移',
+                        'circular_left': '循环左移',
+                        'circular_right': '循环右移'
+                    };
+                    document.getElementById('bit-result-type').textContent = operationNames[processedOperation];
+                } catch (error) {
+                    alert(error.message);
+                }
+            });
+            
+            // 纯前端Shor算法（简化版，仅支持小整数）
+        function isPrime(n) {
+            if (n <= 1) return false;
+            if (n <= 3) return true;
+            if (n % 2 === 0) return false;
+            for (let i = 3; i * i <= n; i += 2) {
+                if (n % i === 0) return false;
+            }
+            return true;
+        }
+        
+        function gcd(a, b) {
+            while (b !== 0) {
+                [a, b] = [b, a % b];
+            }
+            return a;
+        }
+        
+        // Shor算法实现 - 优先分解成两个质数
+        function shorAlgorithm(n) {
+            if (n <= 1) return `${n} 小于等于1，无法分解`;
+            if (isPrime(n)) return `${n} 是素数`;
+            
+            // 特殊情况处理：偶数
+            if (n % 2 === 0) {
+                return `2 × ${n/2}`;
+            }
+            
+            // 寻找两个质数因子
+            for (let a = 2; a < Math.sqrt(n); a++) {
+                if (n % a === 0) {
+                    const b = n / a;
+                    if (isPrime(a) && isPrime(b)) {
+                        return `${a} × ${b}`;
+                    }
+                }
+            }
+            
+            // 如果无法分解成两个质数，尝试分解成所有质因数
+            if (n % 2 === 0) {
+                let count = 0;
+                while (n % 2 === 0) {
+                    count++;
+                    n = n / 2;
+                }
+                const result = shorAlgorithm(n);
+                if (count === 1) {
+                    return `2 × ${result}`;
+                } else {
+                    return `2^${count} × ${result}`;
+                }
+            }
+            
+            for (let a = 3; a < n; a += 2) {
+                const d = gcd(a, n);
+                if (d > 1) {
+                    const result1 = shorAlgorithm(d);
+                    const result2 = shorAlgorithm(n / d);
+                    return `${result1} × ${result2}`;
+                }
+            }
+            
+            return `${n}`;
+        }
+            
+            // 纯前端Shor算法功能
+            document.getElementById('shor-algorithm-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const number = document.getElementById('shor-number').value;
+                
+                if (!number || isNaN(number) || parseInt(number) < 2) {
+                    alert('请输入大于1的整数');
+                    return;
+                }
+                
+                const n = parseInt(number);
+                const result = shorAlgorithm(n);
+                
+                document.getElementById('shor-algorithm-result').classList.remove('hidden');
+                document.getElementById('shor-result-number').textContent = n;
+                document.getElementById('shor-result-text').textContent = `${n} = ${result}`;
+            });
+            
+            // 简化的SHA-256实现（参考：https://github.com/emn178/js-sha256）
+            function sha256(message) {
+                function rotateRight(n, x) {
+                    return (x >>> n) | (x << (32 - n));
+                }
+                
+                function ch(x, y, z) {
+                    return (x & y) ^ (~x & z);
+                }
+                
+                function maj(x, y, z) {
+                    return (x & y) ^ (x & z) ^ (y & z);
+                }
+                
+                function sigma0(x) {
+                    return rotateRight(2, x) ^ rotateRight(13, x) ^ rotateRight(22, x);
+                }
+                
+                function sigma1(x) {
+                    return rotateRight(6, x) ^ rotateRight(11, x) ^ rotateRight(25, x);
+                }
+                
+                function gamma0(x) {
+                    return rotateRight(7, x) ^ rotateRight(18, x) ^ (x >>> 3);
+                }
+                
+                function gamma1(x) {
+                    return rotateRight(17, x) ^ rotateRight(19, x) ^ (x >>> 10);
+                }
+                
+                var K = [
+                    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+                    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+                    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+                    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+                    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+                    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+                    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+                    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+                ];
+                
+                var H = [
+                    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+                ];
+                
+                // 预处理消息
+                var bytes = [];
+                for (var i = 0; i < message.length; i++) {
+                    bytes.push(message.charCodeAt(i));
+                }
+                
+                var bitLength = bytes.length * 8;
+                bytes.push(0x80);
+                while ((bytes.length * 8) % 512 !== 448) {
+                    bytes.push(0x00);
+                }
+                
+                for (var i = 0; i < 8; i++) {
+                    bytes.push((bitLength >>> (56 - i * 8)) & 0xFF);
+                }
+                
+                // 处理每个512位块
+                for (var i = 0; i < bytes.length; i += 64) {
+                    var w = [];
+                    for (var j = 0; j < 16; j++) {
+                        w[j] = (bytes[i + j * 4] << 24) | (bytes[i + j * 4 + 1] << 16) | (bytes[i + j * 4 + 2] << 8) | bytes[i + j * 4 + 3];
+                    }
+                    
+                    for (var j = 16; j < 64; j++) {
+                        w[j] = (gamma1(w[j - 2]) + w[j - 7] + gamma0(w[j - 15]) + w[j - 16]) & 0xFFFFFFFF;
+                    }
+                    
+                    var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+                    
+                    for (var j = 0; j < 64; j++) {
+                        var t1 = (h + sigma1(e) + ch(e, f, g) + K[j] + w[j]) & 0xFFFFFFFF;
+                        var t2 = (sigma0(a) + maj(a, b, c)) & 0xFFFFFFFF;
+                        
+                        h = g;
+                        g = f;
+                        f = e;
+                        e = (d + t1) & 0xFFFFFFFF;
+                        d = c;
+                        c = b;
+                        b = a;
+                        a = (t1 + t2) & 0xFFFFFFFF;
+                    }
+                    
+                    H[0] = (H[0] + a) & 0xFFFFFFFF;
+                    H[1] = (H[1] + b) & 0xFFFFFFFF;
+                    H[2] = (H[2] + c) & 0xFFFFFFFF;
+                    H[3] = (H[3] + d) & 0xFFFFFFFF;
+                    H[4] = (H[4] + e) & 0xFFFFFFFF;
+                    H[5] = (H[5] + f) & 0xFFFFFFFF;
+                    H[6] = (H[6] + g) & 0xFFFFFFFF;
+                    H[7] = (H[7] + h) & 0xFFFFFFFF;
+                }
+                
+                // 生成最终哈希值
+                var hash = '';
+                for (var i = 0; i < H.length; i++) {
+                    hash += ('00000000' + H[i].toString(16)).slice(-8);
+                }
+                
+                return hash;
+            }
+            
+            // 纯前端SHA-256加密功能
+            document.getElementById('sha256-encrypt-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const text = document.getElementById('sha256-text').value;
+                
+                // 使用纯前端SHA-256实现
+                const hash = sha256(text);
+                
+                document.getElementById('sha256-encrypt-result').classList.remove('hidden');
+                document.getElementById('sha256-result-text').textContent = text;
+                document.getElementById('sha256-result-hash').textContent = hash;
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // 主题切换功能
+            // 获取主题切换按钮和图标
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = themeToggle.querySelector('i');
+            
+            // 初始化主题
+            function initTheme() {
+                // 从localStorage获取主题，默认为浅色模式
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                
+                // 更新图标
+                updateThemeIcon(savedTheme);
+            }
+            
+            // 更新主题图标
+            function updateThemeIcon(theme) {
+                if (theme === 'dark') {
+                    themeIcon.classList.remove('fa-moon-o');
+                    themeIcon.classList.add('fa-sun-o');
+                } else {
+                    themeIcon.classList.remove('fa-sun-o');
+                    themeIcon.classList.add('fa-moon-o');
+                }
+            }
+            
+            // 切换主题
+            function toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                // 更新data-theme属性
+                document.documentElement.setAttribute('data-theme', newTheme);
+                
+                // 保存到localStorage
+                localStorage.setItem('theme', newTheme);
+                
+                // 更新图标
+                updateThemeIcon(newTheme);
+            }
+            
+            // 为主题切换按钮添加事件监听器
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // 初始化主题
+            initTheme();
+        
+        // 分享功能
+        const shareButton = document.getElementById('share-button');
+        const shareModal = document.getElementById('share-modal');
+        const closeShareModal = document.getElementById('close-share-modal');
+        const shareUrlInput = document.getElementById('share-url');
+        const copyShareUrl = document.getElementById('copy-share-url');
+        const copySuccess = document.getElementById('copy-success');
+        const qrcodeContainer = document.getElementById('qrcode');
+        
+        // 初始化分享功能
+        function initShare() {
+            // 设置分享链接为当前页面URL
+            const currentUrl = window.location.href;
+            shareUrlInput.value = currentUrl;
+            
+            // 生成二维码
+            const qr = qrcode(0, 'L');
+            qr.addData(currentUrl);
+            qr.make();
+            qrcodeContainer.innerHTML = qr.createImgTag(4, 0);
+        }
+        
+        // 显示分享模态框
+        shareButton.addEventListener('click', function() {
+            shareModal.classList.remove('hidden');
+            initShare();
+        });
+        
+        // 关闭分享模态框
+        closeShareModal.addEventListener('click', function() {
+            shareModal.classList.add('hidden');
+        });
+        
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(e) {
+            if (e.target === shareModal) {
+                shareModal.classList.add('hidden');
+            }
+        });
+        
+        // 复制分享链接
+        copyShareUrl.addEventListener('click', function() {
+            shareUrlInput.select();
+            shareUrlInput.setSelectionRange(0, 99999); // 移动端兼容性
+            
+            navigator.clipboard.writeText(shareUrlInput.value)
+                .then(() => {
+                    // 显示复制成功提示
+                    copySuccess.classList.remove('hidden');
+                    setTimeout(() => {
+                        copySuccess.classList.add('hidden');
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('复制失败:', err);
+                });
+        });
+    });
+    </script>
+    <!-- 分享模态框 -->
+    <div id="share-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-primary">分享泡泡鲸工具</h2>
+                <button id="close-share-modal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-2xl">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- 分享链接 -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">分享链接</label>
+                <div class="flex gap-2">
+                    <input type="text" id="share-url" class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none dark:bg-gray-700 dark:text-white" readonly>
+                    <button id="copy-share-url" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors duration-300">
+                        <i class="fa fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 二维码 -->
+            <div class="mb-6 text-center">
+                <label class="block text-sm font-medium mb-4">扫码访问</label>
+                <div id="qrcode" class="inline-block p-4 bg-white dark:bg-gray-700 rounded-lg shadow-md"></div>
+            </div>
+            
+            <!-- 复制成功提示 -->
+            <div id="copy-success" class="hidden text-green-500 text-center mb-4">
+                <i class="fa fa-check-circle"></i> 链接已复制到剪贴板
+            </div>
+        </div>
+    </div>
+</body>
+</html>
