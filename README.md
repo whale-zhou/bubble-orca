@@ -30,7 +30,7 @@
 
 ### 4. 友好到极致的设计
 - 完全免费、开源、无需登录 – 隐私？你的数据连服务器都不经过
-- 中英双语 – 一键切换，自带“喵鱼级”通俗解释
+- 中英双语 – 一键切换，自带通俗解释
 - 响应飞快 – 纯前端实现，秒开秒玩
 - 移动端友好 – 手机也能愉快戳戳戳
 
@@ -129,7 +129,7 @@ A **fully interactive, visual** tool for cryptography and base conversion, desig
 
 ### 4. Ultra-Friendly Design
 - 100% free, open-source, no login required—your data never leaves your device (no server involved!)
-- Bilingual (Chinese/English): one-click switch, with "cat-fish level" simple explanations
+- Bilingual (Chinese/English): one-click switch, with simple explanations
 - Blazing fast: pure frontend implementation, opens & runs instantly
 - Mobile-friendly: works great on phones too
 
