@@ -1,9 +1,9 @@
-# bubble-orca
-# 🐋 Bubble Orca – 可视化密码学与进制转换乐园
+# bubble-orca CryptoBox
+# 🐋 Bubble Orca CryptoBox– 可视化密码学与进制转换乐园
 让密码学变得像吹泡泡一样简单有趣！
 
 一个为初学者设计的 **全交互式、可视化** 密码学与进制转换工具，无需任何数学或编程基础，打开即玩。
-
+版本V2.0.0已重磅更新！欢迎大家使用！
 
 ## 👉 在线体验
 [https://whale-zhou.github.io/bubble-orca/](https://whale-zhou.github.io/bubble-orca/)
@@ -98,11 +98,11 @@ Bubble Orca = 泡泡 + 虎鲸（Orca是虎鲸的学名）。
 
 
 让学习像吹泡泡一样快乐！
-# 🐋 Bubble Orca – A Visual Playground for Cryptography & Base Conversion
+# 🐋 Bubble Orca CryptoBox– A Visual Playground for Cryptography & Base Conversion
 Make cryptography as fun and easy as blowing bubbles!
 
 A **fully interactive, visual** tool for cryptography and base conversion, designed for beginners—no math or coding skills required. Just open and play.
-
+Version V2.0.0 has been updated significantly! Welcome everyone to use it!
 
 ## 👉 Live Demo
 [https://whale-zhou.github.io/bubble-orca/](https://whale-zhou.github.io/bubble-orca/)
