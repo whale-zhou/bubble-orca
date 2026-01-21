@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHA-256修复测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-case {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .pass {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .fail {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-8 text-center">SHA-256修复测试</h1>
+        <div id="test-results"></div>
+    </div>
+    
+    <script>
+        // SHA-256测试用例
+        const testCases = [
+            { input: "", expected: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" },
+            { input: "1", expected: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b" },
+            { input: "abc", expected: "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad" },
+            { input: "Hello, World!", expected: "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f" }
+        ];
+        
+        // 使用浏览器内置的SubtleCrypto API生成SHA-256哈希值
+        async function generateSHA256(message) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+        
+        // 测试SHA-256实现
+        async function testSHA256() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '';
+            
+            let passed = 0;
+            let failed = 0;
+            
+            for (const testCase of testCases) {
+                const testDiv = document.createElement('div');
+                testDiv.className = 'test-case';
+                
+                const inputDiv = document.createElement('div');
+                inputDiv.innerHTML = `<strong>输入:</strong> "${testCase.input}"`;
+                testDiv.appendChild(inputDiv);
+                
+                const expectedDiv = document.createElement('div');
+                expectedDiv.innerHTML = `<strong>预期:</strong> <pre>${testCase.expected}</pre>`;
+                testDiv.appendChild(expectedDiv);
+                
+                let result;
+                let resultDiv;
+                
+                try {
+                    result = await generateSHA256(testCase.input);
+                    
+                    const resultDiv = document.createElement('div');
+                    resultDiv.innerHTML = `<strong>结果:</strong> <pre>${result}</pre>`;
+                    testDiv.appendChild(resultDiv);
+                    
+                    if (result === testCase.expected) {
+                        const statusDiv = document.createElement('div');
+                        statusDiv.className = 'result pass';
+                        statusDiv.innerHTML = '<strong>状态:</strong> ✓ 通过';
+                        testDiv.appendChild(statusDiv);
+                        passed++;
+                    } else {
+                        const statusDiv = document.createElement('div');
+                        statusDiv.className = 'result fail';
+                        statusDiv.innerHTML = '<strong>状态:</strong> ✗ 失败';
+                        testDiv.appendChild(statusDiv);
+                        failed++;
+                    }
+                } catch (error) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'result fail';
+                    errorDiv.innerHTML = `<strong>错误:</strong> ${error.message}`;
+                    testDiv.appendChild(errorDiv);
+                    failed++;
+                }
+                
+                resultsDiv.appendChild(testDiv);
+            }
+            
+            // 显示测试统计
+            const statsDiv = document.createElement('div');
+            statsDiv.className = 'test-case bg-gray-100';
+            statsDiv.innerHTML = `
+                <h2 class="text-xl font-bold mb-2">测试统计</h2>
+                <div><strong>总测试用例:</strong> ${testCases.length}</div>
+                <div><strong>通过:</strong> ${passed}</div>
+                <div><strong>失败:</strong> ${failed}</div>
+                <div><strong>通过率:</strong> ${((passed / testCases.length) * 100).toFixed(2)}%</div>
+            `;
+            resultsDiv.appendChild(statsDiv);
+        }
+        
+        // 页面加载完成后运行测试
+        document.addEventListener('DOMContentLoaded', testSHA256);
+    </script>
+</body>
+</html>

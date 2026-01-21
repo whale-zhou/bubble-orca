@@ -444,6 +444,7 @@
                 <!-- 运算符选择 -->
                 <div class="space-y-4">
                     <label id="bit-operator-label" class="block text-lg font-semibold text-gray-800 dark:text-white">选择位运算符</label>
+                    <div id="bit-operator-note" class="text-sm text-gray-600 dark:text-gray-400 opacity-80">提示：非门是唯一的一元逻辑门，仅需 1 个输入信号。</div>
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         <button type="button" class="bit-operator-btn bg-primary text-white py-3 px-5 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:translate-y-0" data-operator="&" data-translate-key="bit_operation_type_and">按位与 (&)</button>
                         <button type="button" class="bit-operator-btn bg-gradient-to-r from-blue-50 to-indigo-50 text-primary border border-blue-200 dark:bg-indigo-900/20 dark:border-indigo-700 dark:text-blue-300 py-3 px-5 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:translate-y-0" data-operator="|" data-translate-key="bit_operation_type_or">按位或 (|)</button>
@@ -758,6 +759,7 @@
                 'bit_operation_type_right_shift': '逻辑右移',
                 'bit_operation_type_circular_left': '循环左移',
                 'bit_operation_type_circular_right': '循环右移',
+                'bit_operation_not_gate_note': '提示：非门是唯一的一元逻辑门，仅需 1 个输入信号。',
                 'shor_algorithm_title': 'Shor 算法质数分解',
                 'shor_algorithm_input_label': '请输入要分解的整数',
                 'shor_algorithm_input_placeholder': '例如：15, 21, 35, 49, 121',
@@ -890,6 +892,7 @@
                 'bit_operation_type_right_shift': 'Logical Right Shift',
                 'bit_operation_type_circular_left': 'Circular Left Shift',
                 'bit_operation_type_circular_right': 'Circular Right Shift',
+                'bit_operation_not_gate_note': 'Note: NOT gate is the only unary logic gate, requiring only 1 input signal.',
                 'shor_algorithm_title': 'Shor Algorithm Prime Factorization',
                 'shor_algorithm_input_label': 'Please enter an integer to factorize',
                 'shor_algorithm_input_placeholder': 'For example: 15, 21, 35, 49, 121',
@@ -1131,6 +1134,11 @@
             document.getElementById('bit-operation-title').textContent = translations[lang]['bit_operation_title'];
             document.getElementById('bit-operation-note').textContent = translations[lang]['bit_operation_note'];
             document.getElementById('bit-operator-label').textContent = translations[lang]['bit_operation_operator_label'];
+            // 更新非门提示
+            const bitOperatorNote = document.getElementById('bit-operator-note');
+            if (bitOperatorNote) {
+                bitOperatorNote.textContent = translations[lang]['bit_operation_not_gate_note'];
+            }
             document.getElementById('bit-num1-label').textContent = translations[lang]['bit_operation_num1_label'];
             document.getElementById('bit-num2-label').textContent = translations[lang]['bit_operation_num2_label'];
             document.getElementById('bit-calculate-btn-text').textContent = translations[lang]['bit_operation_calculate_btn'];
