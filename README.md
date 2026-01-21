@@ -1,9 +1,9 @@
-# bubble-orca
-# 🐋 Bubble Orca – 可视化密码学与进制转换乐园
+# bubble-orca CryptoBox
+# 🐋 Bubble Orca CryptoBox– 可视化密码学与进制转换乐园
 让密码学变得像吹泡泡一样简单有趣！
 
 一个为初学者设计的 **全交互式、可视化** 密码学与进制转换工具，无需任何数学或编程基础，打开即玩。
-
+版本V2.0.0已重磅更新！欢迎大家使用！
 
 ## 👉 在线体验
 [https://whale-zhou.github.io/bubble-orca/](https://whale-zhou.github.io/bubble-orca/)
@@ -30,7 +30,7 @@
 
 ### 4. 友好到极致的设计
 - 完全免费、开源、无需登录 – 隐私？你的数据连服务器都不经过
-- 中英双语 – 一键切换，自带“喵鱼级”通俗解释
+- 中英双语 – 一键切换，自带通俗解释
 - 响应飞快 – 纯前端实现，秒开秒玩
 - 移动端友好 – 手机也能愉快戳戳戳
 
@@ -98,11 +98,11 @@ Bubble Orca = 泡泡 + 虎鲸（Orca是虎鲸的学名）。
 
 
 让学习像吹泡泡一样快乐！
-# 🐋 Bubble Orca – A Visual Playground for Cryptography & Base Conversion
+# 🐋 Bubble Orca CryptoBox– A Visual Playground for Cryptography & Base Conversion
 Make cryptography as fun and easy as blowing bubbles!
 
 A **fully interactive, visual** tool for cryptography and base conversion, designed for beginners—no math or coding skills required. Just open and play.
-
+Version V2.0.0 has been updated significantly! Welcome everyone to use it!
 
 ## 👉 Live Demo
 [https://whale-zhou.github.io/bubble-orca/](https://whale-zhou.github.io/bubble-orca/)
@@ -129,7 +129,7 @@ A **fully interactive, visual** tool for cryptography and base conversion, desig
 
 ### 4. Ultra-Friendly Design
 - 100% free, open-source, no login required—your data never leaves your device (no server involved!)
-- Bilingual (Chinese/English): one-click switch, with "cat-fish level" simple explanations
+- Bilingual (Chinese/English): one-click switch, with simple explanations
 - Blazing fast: pure frontend implementation, opens & runs instantly
 - Mobile-friendly: works great on phones too
 
