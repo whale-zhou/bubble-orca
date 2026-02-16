@@ -1395,6 +1395,13 @@
             // 加载配置：URL配置 > 本地存储 > 默认配置
             let activeConfig = urlConfig || JSON.parse(localStorage.getItem('bubble_redpacket_config')) || CONFIG.default;
             
+            // 调试：显示加载的配置来源
+            console.log('=== 页面加载调试 ===');
+            console.log('URL配置:', urlConfig);
+            console.log('本地存储配置:', localStorage.getItem('bubble_redpacket_config'));
+            console.log('最终使用的配置:', activeConfig);
+            console.log('==================');
+            
             // 把配置回填到开发者页面
             if (configPassword) configPassword.value = activeConfig.password || '';
             if (configCode) configCode.value = activeConfig.redeemCode || '';
@@ -1537,6 +1544,13 @@
             if (redeemBtn) {
                 redeemBtn.addEventListener('click', () => {
                     const inputCode = redeemInput.value.trim();
+                    
+                    // 调试：显示当前配置
+                    console.log('=== 调试信息 ===');
+                    console.log('输入的暗号:', inputCode);
+                    console.log('配置中的暗号:', activeConfig.password);
+                    console.log('完整配置:', activeConfig);
+                    console.log('================');
                     
                     // 检查是否匹配暗号（可重复使用）
                     if (inputCode === activeConfig.password) {
