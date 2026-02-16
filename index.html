@@ -1350,16 +1350,51 @@
             const configTip = document.getElementById('config-tip');
             const closeDevModalBtns = document.querySelectorAll('.close-dev-modal');
 
-            // ========== 初始化：读取本地存储的配置 ==========
-            // 检查配置版本，如果版本不匹配则清除旧配置
+            // ========== 初始化：优先从URL加载配置 ==========
+            // 先尝试从URL加载配置（优先级最高）
+            function loadConfigFromUrl() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const configParam = urlParams.get('c');
+                
+                if (configParam) {
+                    try {
+                        const decodedStr = decodeURIComponent(escape(atob(configParam)));
+                        const urlConfig = JSON.parse(decodedStr);
+                        
+                        // 保存到本地存储
+                        const configToSave = {
+                            ...CONFIG.default,
+                            ...urlConfig,
+                            redeemCodeUsed: false
+                        };
+                        localStorage.setItem('bubble_redpacket_config', JSON.stringify(configToSave));
+                        localStorage.setItem('bubble_redpacket_version', CONFIG.version);
+                        
+                        // 清除URL参数（避免刷新后重复加载）
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        
+                        return configToSave;
+                    } catch (e) {
+                        console.error('解析分享链接失败:', e);
+                        return null;
+                    }
+                }
+                return null;
+            }
+            
+            // 优先从URL加载配置
+            const urlConfig = loadConfigFromUrl();
+            
+            // 检查配置版本，如果版本不匹配则清除旧配置（但保留URL加载的配置）
             const savedVersion = localStorage.getItem('bubble_redpacket_version');
-            if (savedVersion !== CONFIG.version) {
-                // 版本不匹配，清除旧配置
+            if (savedVersion !== CONFIG.version && !urlConfig) {
                 localStorage.removeItem('bubble_redpacket_config');
                 localStorage.setItem('bubble_redpacket_version', CONFIG.version);
             }
             
-            let activeConfig = JSON.parse(localStorage.getItem('bubble_redpacket_config')) || CONFIG.default;
+            // 加载配置：URL配置 > 本地存储 > 默认配置
+            let activeConfig = urlConfig || JSON.parse(localStorage.getItem('bubble_redpacket_config')) || CONFIG.default;
+            
             // 把配置回填到开发者页面
             if (configPassword) configPassword.value = activeConfig.password || '';
             if (configCode) configCode.value = activeConfig.redeemCode || '';
@@ -2119,51 +2154,6 @@
                 });
             }
             
-            // ========== 解析URL参数加载配置 ==========
-            function loadConfigFromUrl() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const configParam = urlParams.get('c');
-                
-                if (configParam) {
-                    try {
-                        const decodedStr = decodeURIComponent(escape(atob(configParam)));
-                        const urlConfig = JSON.parse(decodedStr);
-                        
-                        // 合并配置（URL配置优先）
-                        activeConfig = {
-                            ...CONFIG.default,
-                            ...urlConfig,
-                            redeemCodeUsed: false // 重置使用状态
-                        };
-                        
-                        // 保存到本地存储
-                        localStorage.setItem('bubble_redpacket_config', JSON.stringify(activeConfig));
-                        
-                        // 回填到开发者页面
-                        if (configPassword) configPassword.value = activeConfig.password || '';
-                        if (configCode) configCode.value = activeConfig.redeemCode || '';
-                        if (configLink) configLink.value = activeConfig.redpacketLink || '';
-                        const configKoulingEl = document.getElementById('config-kouling');
-                        if (configKoulingEl) configKoulingEl.value = activeConfig.kouling || '';
-                        const configTitleEl = document.getElementById('config-title');
-                        if (configTitleEl) configTitleEl.value = activeConfig.title || '';
-                        if (configBlessing) configBlessing.value = activeConfig.blessing || '';
-                        
-                        // 清除URL参数（避免刷新后重复加载）
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                        
-                        return true;
-                    } catch (e) {
-                        console.error('解析分享链接失败:', e);
-                        return false;
-                    }
-                }
-                return false;
-            }
-            
-            // 页面加载时尝试从URL加载配置
-            loadConfigFromUrl();
-
             // ========== 关闭弹窗逻辑 ==========
             closeModalBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
