@@ -1384,11 +1384,19 @@
                         try {
                             const urlConfig = JSON.parse(decodedStr);
                             
+                            // 获取已有的本地配置，保留兑换码使用状态
+                            const existingConfig = JSON.parse(localStorage.getItem('bubble_redpacket_config')) || {};
+                            
+                            // 如果兑换码相同，保留使用状态；如果不同，重置为未使用
+                            const redeemCodeUsed = (existingConfig.redeemCode === urlConfig.redeemCode) 
+                                ? (existingConfig.redeemCodeUsed || false) 
+                                : false;
+                            
                             // 保存到本地存储
                             const configToSave = {
                                 ...CONFIG.default,
                                 ...urlConfig,
-                                redeemCodeUsed: false
+                                redeemCodeUsed: redeemCodeUsed
                             };
                             localStorage.setItem('bubble_redpacket_config', JSON.stringify(configToSave));
                             localStorage.setItem('bubble_redpacket_version', CONFIG.version);
