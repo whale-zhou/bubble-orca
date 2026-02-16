@@ -1364,7 +1364,9 @@
             // Base64 解码函数（支持中文）
             function base64Decode(base64) {
                 try {
-                    return decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+                    // URL 传输时 + 会被替换为空格，需要还原
+                    const cleanBase64 = base64.replace(/ /g, '+');
+                    return decodeURIComponent(atob(cleanBase64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
                 } catch (e) {
                     console.error('Base64解码失败:', e);
                     return null;
