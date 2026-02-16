@@ -1384,19 +1384,20 @@
                         try {
                             const urlConfig = JSON.parse(decodedStr);
                             
-                            // 获取已有的本地配置，保留兑换码使用状态
+                            // 获取已有的本地配置
                             const existingConfig = JSON.parse(localStorage.getItem('bubble_redpacket_config')) || {};
                             
-                            // 如果兑换码相同，保留使用状态；如果不同，重置为未使用
-                            const redeemCodeUsed = (existingConfig.redeemCode === urlConfig.redeemCode) 
-                                ? (existingConfig.redeemCodeUsed || false) 
-                                : false;
+                            // 如果本地兑换码已为空（已使用），则不恢复URL中的兑换码
+                            if (existingConfig.redeemCode === '' && urlConfig.redeemCode) {
+                                urlConfig.redeemCode = ''; // 保持已销毁状态
+                                urlConfig.redeemCodeUsed = true;
+                            }
                             
                             // 保存到本地存储
                             const configToSave = {
                                 ...CONFIG.default,
                                 ...urlConfig,
-                                redeemCodeUsed: redeemCodeUsed
+                                redeemCodeUsed: urlConfig.redeemCodeUsed || false
                             };
                             localStorage.setItem('bubble_redpacket_config', JSON.stringify(configToSave));
                             localStorage.setItem('bubble_redpacket_version', CONFIG.version);
@@ -1607,8 +1608,9 @@
                         }
                     }
                     // 检查是否匹配兑换码（一次性）
-                    else if (inputCode === activeConfig.redeemCode && !activeConfig.redeemCodeUsed) {
-                        // 兑换码验证通过，标记为已使用
+                    else if (inputCode === activeConfig.redeemCode && activeConfig.redeemCode) {
+                        // 兑换码验证通过，直接销毁兑换码
+                        activeConfig.redeemCode = ''; // 清空兑换码
                         activeConfig.redeemCodeUsed = true;
                         localStorage.setItem('bubble_redpacket_config', JSON.stringify(activeConfig));
                         
@@ -1631,7 +1633,7 @@
                             koulingText.style.display = 'none';
                         }
                     }
-                    else if (inputCode === activeConfig.redeemCode && activeConfig.redeemCodeUsed) {
+                    else if (inputCode === activeConfig.redeemCode && !activeConfig.redeemCode) {
                         alert('这个兑换码已经被使用过了哦😾');
                     }
                     else {
