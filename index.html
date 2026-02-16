@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>泡泡鲸密码箱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4361ee',
+                        secondary: '#3a0ca3',
+                        accent: '#4cc9f0',
+                        neutral: '#f8f9fa',
+                        'neutral-dark': '#212529',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .bit-transition {
+                transition: all 0.3s ease-in-out;
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background-color: rgba(255, 255, 255, 0.7);
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .gradient-text {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                background-image: linear-gradient(45deg, #4361ee, #4cc9f0);
+            }
+        }
+    </style>
+    
+    <!-- 主题切换样式 -->
+    <style>
+        /* 根元素主题变量 */
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            scroll-behavior: smooth;
+        }
+        
+        /* 深色主题 */
+        [data-theme="dark"] {
+            --bg-color: #0a0e27;
+            --text-color: #ffffff;
+            --card-bg: #1a1f3a;
+            --border-color: #2d3748;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        /* 应用主题变量 */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* 深色主题下的渐变背景 */
+        [data-theme="dark"] {
+            --bg-gradient-dark: #121212;
+        }
+        
+        /* 卡片主题样式 */
+        [data-theme="dark"] .bg-white {
+            background-color: var(--card-bg);
+        }
+        
+        [data-theme="dark"] .bg-neutral {
+            background-color: var(--card-bg);
+        }
+        
+        [data-theme="dark"] .bg-blue-50 {
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+        
+        [data-theme="dark"] .border {
+            border-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] .text-gray-600,
+        [data-theme="dark"] .text-gray-500 {
+            color: #adb5bd;
+        }
+        
+        [data-theme="dark"] .bg-gray-200 {
+            background-color: #343a40;
+        }
+        
+        [data-theme="dark"] .text-gray-800 {
+            color: var(--text-color);
+        }
+        
+        /* 玻璃效果深色主题 */
+        [data-theme="dark"] .glass-effect {
+            background-color: rgba(26, 31, 58, 0.8);
+        }
+        
+        /* 页脚深色主题 */
+        [data-theme="dark"] footer {
+            background-color: rgba(10, 14, 39, 0.9);
+            border-color: var(--border-color);
+        }
+        
+        /* 深色主题下的所有文本颜色 */
+        [data-theme="dark"] {
+            color: var(--text-color);
+        }
+        
+        /* 所有结果区域的文字都是白色 */
+        .text-lg.font-mono {
+            color: white;
+        }
+        
+        /* 所有结果标签 */
+        [id*="result-"] {
+            color: white;
+        }
+        
+        /* 深色主题下的输入框样式 */
+        [data-theme="dark"] input,
+        [data-theme="dark"] textarea,
+        [data-theme="dark"] select {
+            color: #ffffff !important;
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+        }
+        
+        /* 深色主题下的输入框占位符样式 */
+        [data-theme="dark"] ::placeholder {
+            color: #adb5bd !important;
+        }
+        
+        /* 深色主题下的卡片阴影 */
+        [data-theme="dark"] .shadow-lg {
+            box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -2px var(--shadow-color);
+        }
+        
+        /* 语言切换开关样式 */
+        #language-switch {
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        [data-theme="dark"] #language-switch {
+            background-color: #374151;
+        }
+        
+        .language-option {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+            outline: none;
+        }
+        
+        .language-option span {
+            border-radius: 9999px;
+            padding: 4px 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #4b5563;
+        }
+        
+        [data-theme="dark"] .language-option span {
+            color: #d1d5db;
+        }
+        
+        .language-option.active span {
+            background-color: #ffffff;
+            color: #1f2937;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        
+        [data-theme="dark"] .language-option.active span {
+            background-color: #4361ee;
+            color: #ffffff;
+        }
+        
+        .language-option:hover span {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        [data-theme="dark"] .language-option:hover span {
+            background-color: rgba(67, 97, 238, 0.3);
+        }
+        
+        /* 设置按钮样式 */
+        #settings-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-color);
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #settings-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+        
+        /* 设置面板样式 */
+        #settings-panel {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            min-width: 280px;
+            display: none;
+        }
+        
+        #settings-panel.show {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .setting-item {
+            margin-bottom: 16px;
+        }
+        
+        .setting-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+        
+        .setting-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .setting-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .setting-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .setting-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        /* 主题切换按钮 */
+        #theme-toggle {
+            transition: transform 0.3s ease;
+        }
+        
+        #theme-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        /* 算法切换动画 */
+        @keyframes jelly-up {
+            0%, 100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            25% {
+                transform: translateY(-5px) scaleY(0.95);
+            }
+            50% {
+                transform: translateY(-2px) scaleY(1.02);
+            }
+            75% {
+                transform: translateY(-1px) scaleY(0.98);
+            }
+        }
+        
+        @keyframes fade-in-stitch {
+            0% {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            25% {
+                opacity: 0.3;
+                transform: scale(0.98);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+            75% {
+                opacity: 0.8;
+                transform: scale(1.01);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .animate-jelly {
+            animation: jelly-up 0.6s ease-out;
+        }
+        
+        .animate-fade-in {
+            animation: fade-in-stitch 0.8s ease-out;
+        }
+        
+        /* 深海粒子背景样式 */
+        #deep-sea-background {
+            position: fixed;
+            inset: 0;
+            z-index: -10;
+            overflow: hidden;
+        }
+        
+        /* 粒子样式 */
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: twinkle 2s infinite ease-in-out;
+            box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+        
+        /* 遮罩文字 */
+        .mask-text {
+            font-family: 'Inter', 'JetBrains Mono', sans-serif;
+            font-size: clamp(3rem, 70vw, 12rem);
+            font-weight: 900;
+            text-align: center;
+            width: 80%;
+            padding: 0 2rem;
+            box-sizing: border-box;
+            /* 蓝白渐变色 */
+            background: linear-gradient(135deg, #4361ee, #4cc9f0, white);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            /* 添加文字发光效果 */
+            text-shadow: 0 0 10px rgba(67, 97, 238, 0.5), 0 0 20px rgba(76, 201, 240, 0.3);
+            /* 入场动画 */
+            animation: textEntrance 2s ease-out forwards, gradientFlow 15s ease infinite;
+            /* 初始状态 */
+            opacity: 0;
+            filter: blur(10px);
+            transform: scale(0.9);
+        }
+        
+        /* 渐变流动动画 */
+        @keyframes gradientFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        /* 文字入场动画 */
+        @keyframes textEntrance {
+            0% {
+                opacity: 0;
+                filter: blur(10px);
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                filter: blur(0);
+                transform: scale(1);
+            }
+        }
+        
+        /* 浮动几何图形样式 */
+        .floating-shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            animation: float-shape 30s infinite linear;
+        }
+        
+        @keyframes float-shape {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px) rotate(360deg);
+            }
+        }
+        
+        .shape-1 {
+            width: 60px;
+            height: 60px;
+            top: 20%;
+            left: 10%;
+            background: rgba(67, 180, 255, 0.1);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            animation-duration: 25s;
+        }
+        
+        .shape-2 {
+            width: 80px;
+            height: 80px;
+            top: 50%;
+            right: 15%;
+            background: rgba(67, 180, 255, 0.15);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            animation-duration: 35s;
+        }
+        
+        .shape-3 {
+            width: 40px;
+            height: 40px;
+            bottom: 30%;
+            left: 20%;
+            background: rgba(67, 180, 255, 0.12);
+            clip-path: polygon(0% 20%, 60% 20%, 60% 0%, 100% 50%, 60% 100%, 60% 80%, 0% 80%);
+            animation-duration: 28s;
+        }
+        
+        .shape-4 {
+            width: 50px;
+            height: 50px;
+            top: 70%;
+            right: 25%;
+            background: rgba(67, 180, 255, 0.08);
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            animation-duration: 32s;
+        }
+        
+        /* 二进制水印样式 */
+        .binary-watermark {
+            background-image: 
+                linear-gradient(0deg, rgba(67, 180, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(67, 180, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: binary-scroll 8s linear infinite;
+            opacity: 0.6;
+        }
+        
+        @keyframes binary-scroll {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 0 100px;
+            }
+        }
+        
+        /* 泡泡鲸遮罩文字样式 */
+        #bubble-orca-mask {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* 主内容样式 */
+        #main-content {
+            position: relative;
+            z-index: 10;
+            min-height: 200vh;
+        }
+        
+        /* 主内容背景层 - 带镂空效果 */
+        #main-content::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-color: #0a0e27;
+            z-index: -1;
+            /* 镂空文字效果 */
+            -webkit-mask-image: url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 800 200%22%3E%3Crect x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22 fill=%22white%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%22120%22 font-weight=%22bold%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22black%22%3E泡泡鲸密码箱%3C/text%3E%3C/svg%3E');
+            mask-image: url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 800 200%22%3E%3Crect x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22 fill=%22white%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%22120%22 font-weight=%22bold%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22black%22%3E泡泡鲸密码箱%3C/text%3E%3C/svg%3E');
+            -webkit-mask-size: 80% 50%;
+            mask-size: 80% 50%;
+            -webkit-mask-position: center;
+            mask-position: center;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+        }
+        
+        /* 背景图片容器 */
+        #parallax-bg {
+            background-image: url('./images/starry-sky.jpg');
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.1s ease-out;
+        }
+        
+        /* 视差滚动效果 */
+        #bubble-orca-mask {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+            background: transparent;
+            -webkit-mask-image: url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 800 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%22120%22 font-weight=%22bold%22 text-anchor=%22middle%22 dy=%22.3em%22%3E泡泡鲸密码箱%3C/text%3E%3C/svg%3E');
+            mask-image: url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 800 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%22120%22 font-weight=%22bold%22 text-anchor=%22middle%22 dy=%22.3em%22%3E泡泡鲸密码箱%3C/text%3E%3C/svg%3E');
+            -webkit-mask-size: 80% 50%;
+            mask-size: 80% 50%;
+            -webkit-mask-position: center;
+            mask-position: center;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            transition: transform 0.1s ease-out, opacity 0.1s ease-out, scale 0.1s ease-out;
+            opacity: 0;
+            transform: scale(1.2) translateX(100px);
+        }
+        
+        /* 背景容器层级 */
+        #background-container {
+            z-index: 0;
+        }
+        
+        /* 贺新春按钮呼吸灯效果 */
+        @keyframes breathe {
+            0%, 100% {
+                box-shadow: 0 0 8px rgba(220, 38, 38, 0.7), 0 0 15px rgba(220, 38, 38, 0.5), 0 0 25px rgba(220, 38, 38, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(220, 38, 38, 1), 0 0 30px rgba(220, 38, 38, 0.8), 0 0 45px rgba(220, 38, 38, 0.6), 0 0 60px rgba(220, 38, 38, 0.4);
+            }
+        }
+        
+        #spring-btn {
+            animation: breathe 2s ease-in-out infinite;
+        }
+        
+        #spring-btn.clicked {
+            animation: none;
+            box-shadow: 0 0 5px rgba(220, 38, 38, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans">
+    <!-- 背景容器 -->
+    <div id="background-container" class="fixed inset-0 z-0 overflow-hidden">
+        <!-- 主背景图片 -->
+        <div id="parallax-bg" class="absolute inset-0"></div>
+        
+        <!-- 深层背景渐变（带透明度） -->
+        <div class="absolute inset-0 bg-gradient-to-b from-[#050814]/70 via-[#0a0e27]/50 to-[#080c20]/70"></div>
+        
+        <!-- 中层背景 - 深蓝色调 -->
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#1a1f3a]/30 to-transparent"></div>
+        
+        <!-- 浅层背景 - 发光效果 -->
+        <div class="absolute inset-0 bg-gradient-radial from-[#4361ee]/10 via-transparent to-transparent"></div>
+        
+        <!-- 粒子容器 -->
+        <div id="particles-container"></div>
+    </div>
+
+    <!-- 遮罩文字 -->
+    <div id="bubble-orca-mask">
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('./images/starry-sky.jpg'); filter: brightness(1.2);"></div>
+    </div>
+
+    <!-- 贺新春按钮 -->
+    <button id="spring-btn" class="fixed top-4 right-20 z-50 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-lg">
+        贺新春
+    </button>
+    
+    <!-- 设置按钮 -->
+    <button id="settings-btn" class="fixed top-4 right-4 z-50">
+        <i class="fa fa-cog" aria-hidden="true"></i>
+    </button>
+    
+    <!-- 设置面板 -->
+    <div id="settings-panel">
+        <h3 class="text-lg font-bold mb-4">设置</h3>
+        <div class="setting-item">
+            <label class="setting-label">粒子数量</label>
+            <div class="setting-controls">
+                <button class="setting-btn">关闭</button>
+                <button class="setting-btn">(...)</button>
+                <button class="setting-btn">(...)</button>
+            </div>
+        </div>
+        <div class="setting-item">
+            <label class="setting-label">语言切换</label>
+            <div class="setting-controls">
+                <button class="setting-btn">中文</button>
+                <button class="setting-btn">English</button>
+            </div>
+        </div>
+        <div class="setting-item">
+            <label class="setting-label">粒子鼠标跟随</label>
+            <div class="setting-controls">
+                <button class="setting-btn">打开</button>
+                <button class="setting-btn">关闭</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 贺新春弹窗 -->
+    <div id="spring-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="width: 90%; max-width: 400px; background: linear-gradient(135deg, #1a0a0a 0%, #2d1810 100%); border-radius: 20px; padding: 30px; box-shadow: 0 0 50px rgba(220, 38, 38, 0.5); text-align: center; position: relative; border: 2px solid rgba(255, 215, 0, 0.3);">
+            <h3 style="color: #ffd700; margin-bottom: 20px; font-size: 20px;">🧧 泡泡鲸祝您2026新年快乐，马到成功 🧧</h3>
+            <p style="color: #f8d7da; margin-bottom: 30px; font-size: 16px;">点击下方按钮，输入兑换码解锁泡泡鲸的专属过年红包呀</p>
+            
+            <!-- 泡泡鲸过年主按钮 -->
+            <button id="bubble-newyear-btn" style="margin: 20px 0; padding: 15px 60px; border: none; border-radius: 50px; background: linear-gradient(135deg, #dc2626 0%, #f59e0b 100%); color: white; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px rgba(220, 38, 38, 0.6); display: inline-flex; align-items: center; gap: 10px;">
+                <span style="font-size: 28px;">🧧</span>
+                泡泡鲸过年
+                <span style="font-size: 28px;">🧧</span>
+            </button>
+
+            <!-- 低调的灰色下划线文字"开发者模式" -->
+            <div style="text-align: center; margin-top: 20px;">
+                <span id="dev-mode-text" style="color: #64748b; font-size: 14px; text-decoration: underline; cursor: pointer; user-select: none; opacity: 0.7;">开发者模式</span>
+            </div>
+            
+            <!-- 关闭按钮 -->
+            <button id="close-spring-modal" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #fcd34d; font-size: 24px; cursor: pointer;">×</button>
+        </div>
+    </div>
+    
+    <!-- 领红包弹窗 -->
+    <div id="redpacket-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1001; justify-content: center; align-items: center;">
+        <div style="width: 90%; max-width: 500px; background: linear-gradient(135deg, #2d1810 0%, #4a1f1f 100%); border-radius: 20px; padding: 30px; box-shadow: 0 0 50px rgba(255, 215, 0, 0.3); text-align: center; position: relative; border: 2px solid rgba(255, 215, 0, 0.3);">
+            <!-- 兑换码领取页 -->
+            <div id="redeem-step" class="modal-step">
+                <h3 style="color: #ffd700; margin-bottom: 20px; font-size: 24px;">把你收到的暗号或专属兑换码告诉我吧～</h3>
+                <input type="text" id="redeem-input" placeholder="提示：兑换码仅可领取一次，用后即焚~" style="width: 100%; padding: 15px; border-radius: 15px; border: 1px solid #7c2d12; background: #1a0a0a; color: white; margin: 20px 0; font-size: 16px; box-sizing: border-box;">
+                <button id="redeem-btn" style="padding: 12px 40px; border: none; border-radius: 30px; background: linear-gradient(135deg, #dc2626 0%, #f59e0b 100%); color: white; font-size: 18px; cursor: pointer; box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);">领取我的专属红包</button>
+            </div>
+
+            <!-- 红包惊喜页 -->
+            <div id="surprise-step" class="modal-step" style="display: none;">
+                <h3 style="color: #ffd700; font-family: 'Segoe Script', cursive; font-size: 22px; margin-bottom: 20px;">🧧 给我最可爱的宝贝 🧧</h3>
+                <p id="blessing-text" style="color: #fef3c7; line-height: 1.8; margin-bottom: 15px; font-size: 15px;">新年快乐呀我的宝贝🐋！新的一年，愿你每天都有收不完的红包、吃不完的好吃的、做不完的开心事！我会继续给你写更多专属代码、做更多专属惊喜，永远做你的专属泡泡鲸呀～</p>
+                <p id="kouling-text" style="color: #9ca3af; line-height: 1.8; margin-bottom: 20px; font-size: 14px;">你的支付宝红包口令为：<span id="kouling-value" style="color: #3b82f6; font-size: 18px; font-weight: bold;"></span></p>
+                <a id="redpacket-link" target="_blank" style="display: inline-block; padding: 12px 30px; border-radius: 30px; background: linear-gradient(135deg, #dc2626 0%, #f59e0b 100%); color: white; text-decoration: none; font-size: 16px; font-weight: bold; box-shadow: 0 0 25px rgba(220, 38, 38, 0.6);">🧧 点我领取泡泡鲸的过年红包 🧧</a>
+                <button id="copy-kouling-btn" style="display: block; margin: 15px auto 0; padding: 10px 25px; border: 2px solid #3b82f6; border-radius: 25px; background: transparent; color: #3b82f6; font-size: 14px; cursor: pointer; transition: all 0.3s;">📋 复制我的口令</button>
+                <p id="copy-tip" style="color: #22c55e; font-size: 13px; margin-top: 10px; opacity: 0; transition: opacity 0.3s;"></p>
+            </div>
+
+            <!-- 关闭按钮 -->
+            <button class="close-modal" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #fcd34d; font-size: 24px; cursor: pointer;">×</button>
+        </div>
+    </div>
+    
+    <!-- 开发者模式弹窗 -->
+    <div id="dev-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1001; justify-content: center; align-items: center;">
+        <div style="width: 90%; max-width: 500px; background: linear-gradient(135deg, #2d1810 0%, #4a1f1f 100%); border-radius: 20px; padding: 30px; box-shadow: 0 0 50px rgba(255, 215, 0, 0.3); text-align: center; position: relative; border: 2px solid rgba(255, 215, 0, 0.3);">
+            <!-- 哈希校验页 -->
+            <div id="dev-hash-step" class="dev-step">
+                <h3 style="color: #ffd700; margin-bottom: 20px; font-size: 24px;">请输入64位加盐哈希</h3>
+                <input type="password" id="dev-hash-input" placeholder="请输入64位密文" style="width: 100%; padding: 15px; border-radius: 15px; border: 1px solid #7c2d12; background: #1a0a0a; color: white; margin: 20px 0; font-size: 16px; box-sizing: border-box;">
+                <button id="dev-enter-btn" style="padding: 12px 40px; border: none; border-radius: 30px; background: linear-gradient(135deg, #dc2626 0%, #f59e0b 100%); color: white; font-size: 18px; cursor: pointer; box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);">进入开发者模式</button>
+            </div>
+
+            <!-- 开发者配置页 -->
+            <div id="dev-config-step" class="dev-step" style="display: none;">
+                <h3 style="color: #ffd700; margin-bottom: 20px; font-size: 22px;">🔧 泡泡鲸红包开发者配置</h3>
+                
+                <!-- 暗号配置项 -->
+                <div class="config-item" style="text-align: left; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <label style="color: #fef3c7; font-size: 15px;">暗号（可重复使用）</label>
+                        <div style="display: flex; gap: 10px;">
+                            <span class="toggle-add" data-target="password-add" style="color: #22c55e; cursor: pointer; font-size: 12px; user-select: none;">+ 新增暗号</span>
+                            <span class="toggle-arrow" data-target="password-history" style="color: #fcd34d; cursor: pointer; font-size: 12px; user-select: none;">▼ 历史记录</span>
+                        </div>
+                    </div>
+                    <input type="text" id="config-password" placeholder="设置一个暗号，如：我爱你" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #7c2d12; background: #1a0a0a; color: white; box-sizing: border-box;">
+                    <div id="password-add" class="add-panel" style="display: none; margin-top: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border-radius: 10px; border: 1px solid rgba(34, 197, 94, 0.3);">
+                        <input type="text" id="new-password-input" placeholder="输入新的暗号" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #7c2d12; background: #1a0a0a; color: white; box-sizing: border-box; margin-bottom: 8px;">
+                        <button class="save-new-btn" data-type="password" style="padding: 6px 15px; border: none; border-radius: 8px; background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%); color: white; font-size: 13px; cursor: pointer;">保存</button>
+                    </div>
+                    <div id="password-history" class="history-panel" style="display: none; margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px; max-height: 120px; overflow-y: auto;"></div>
+                </div>
+
+                <!-- 兑换码配置项 -->
+                <div class="config-item" style="text-align: left; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <label style="color: #fef3c7; font-size: 15px;">兑换码（一次性，用后即焚）</label>
+                        <div style="display: flex; gap: 10px;">
+                            <span class="toggle-add" data-target="code-add" style="color: #22c55e; cursor: pointer; font-size: 12px; user-select: none;">+ 新增兑换码</span>
+                            <span class="toggle-arrow" data-target="code-history" style="color: #fcd34d; cursor: pointer; font-size: 12px; user-select: none;">▼ 历史记录</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="config-code" placeholder="点击按钮随机生成" readonly style="flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #7c2d12; background: #1a0a0a; color: white; box-sizing: border-box;">
+                        <button id="generate-code-btn" style="padding: 10px 15px; border: none; border-radius: 10px; background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); color: white; font-size: 14px; cursor: pointer; white-space: nowrap;">随机生成</button>
+                    </div>
+                    <div id="code-add" class="add-panel" style="display: none; margin-top: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border-radius: 10px; border: 1px solid rgba(34, 197, 94, 0.3);">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="new-code-input" placeholder="输入新的兑换码或点击生成" style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #7c2d12; background: #1a0a0a; color: white; box-sizing: border-box;">
+                            <button id="generate-new-code-btn" style="padding: 6px 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); color: white; font-size: 12px; cursor: pointer;">生成</button>
+                        </div>
+                        <button class="save-new-btn" data-type="code" style="margin-top: 8px; padding: 6px 15px; border: none; border-radius: 8px; background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%); color: white; font-size: 13px; cursor: pointer;">保存</button>
+                    </div>
+                    <div id="code-history" class="history-panel" style="display: none; margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px; max-height: 120px; overflow-y: auto;"></div>
+                </div>
+
+                <!-- 链接配置项 -->
+                <div class="config-item" style="text-align: left; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <label style="color: #fef3c7; font-size: 15px;">支付宝红包跳转链接</label>
+                        <div style="display: flex; gap: 10px;">
+                            <span class="toggle-add" data-target="link-add" style="color: #22c55e; cursor: pointer; font-size: 12px; user-select: none;">+ 新增链接</span>
+                            <span class="toggle-arrow" data-target="link-history" style="color: #fcd34d; cursor: pointer; font-size: 12px; user-select: none;">▼ 历史记录</span>
+                        </div>
+                    </div>
+                    <input type="text" id="config-link" placeholder="粘贴你提前复制的支付宝红包链接" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #7c2d12; background: #1a0a0a; color: white; box-sizing: border-box;">
+                    <div id="link-add" class="add-panel" style="display: none; margin-top: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border-radius: 10px; border: 1px solid rgba(34, 197, 94, 0.3);">
+                        <input type="text" id="new-link-input" placeholder="输入新的链接" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #7c2d12; background: #1a0a0a; color: white; box-sizing: border-box; margin-bottom: 8px;">
+                        <button class="save-new-btn" data-type="link" style="padding: 6px 15px; border: none; border-radius: 8px; background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%); color: white; font-size: 13px; cursor: pointer;">保存</button>
+                    </div>
+                    <div id="link-history" class="history-panel" style="display: none; margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px; max-height: 120px; overflow-y: auto;"></div>
+                </div>
+
+                <!-- 口令配置项 -->
+                <div class="config-item" style="text-align: left; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <label style="color: #fef3c7; font-size: 15px;">支付宝红包口令</label>
+                        <div style="display: flex; gap: 10px;">
+                            <span class="toggle-add" data-target="kouling-add" style="color: #22c55e; cursor: pointer; font-size: 12px; user-select: none;">+ 新增口令</span>
+                            <span class="toggle-arrow" data-target="kouling-history" style="color: #fcd34d; cursor: pointer; font-size: 12px; user-select: none;">▼ 历史记录</span>
+                        </div>
+                    </div>
+                    <input type="text" id="config-kouling" placeholder="输入支付宝红包口令，如：泡泡鲸新年快乐" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #7c2d12; background: #1a0a0a; color: white; box-sizing: border-box;">
+                    <div id="kouling-add" class="add-panel" style="display: none; margin-top: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border-radius: 10px; border: 1px solid rgba(34, 197, 94, 0.3);">
+                        <input type="text" id="new-kouling-input" placeholder="输入新的口令" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #7c2d12; background: #1a0a0a; color: white; box-sizing: border-box; margin-bottom: 8px;">
+                        <button class="save-new-btn" data-type="kouling" style="padding: 6px 15px; border: none; border-radius: 8px; background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%); color: white; font-size: 13px; cursor: pointer;">保存</button>
+                    </div>
+                    <div id="kouling-history" class="history-panel" style="display: none; margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px; max-height: 120px; overflow-y: auto;"></div>
+                </div>
+
+                <!-- 祝福语配置项 -->
+                <div class="config-item" style="text-align: left; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <label style="color: #fef3c7; font-size: 15px;">专属祝福语</label>
+                        <div style="display: flex; gap: 10px;">
+                            <span class="toggle-add" data-target="blessing-add" style="color: #22c55e; cursor: pointer; font-size: 12px; user-select: none;">+ 新增祝福语</span>
+                            <span class="toggle-arrow" data-target="blessing-history" style="color: #fcd34d; cursor: pointer; font-size: 12px; user-select: none;">▼ 历史记录</span>
+                        </div>
+                    </div>
+                    <textarea id="config-blessing" rows="3" placeholder="写给她的专属情话" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #7c2d12; background: #1a0a0a; color: white; box-sizing: border-box;"></textarea>
+                    <div id="blessing-add" class="add-panel" style="display: none; margin-top: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border-radius: 10px; border: 1px solid rgba(34, 197, 94, 0.3);">
+                        <textarea id="new-blessing-input" rows="2" placeholder="输入新的祝福语" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #7c2d12; background: #1a0a0a; color: white; box-sizing: border-box; margin-bottom: 8px;"></textarea>
+                        <button class="save-new-btn" data-type="blessing" style="padding: 6px 15px; border: none; border-radius: 8px; background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%); color: white; font-size: 13px; cursor: pointer;">保存</button>
+                    </div>
+                    <div id="blessing-history" class="history-panel" style="display: none; margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px; max-height: 120px; overflow-y: auto;"></div>
+                </div>
+
+                <button id="config-save-btn" style="margin-top: 10px; padding: 10px 30px; border: none; border-radius: 25px; background: linear-gradient(135deg, #10b981 0%, #34d399 100%); color: white; font-size: 16px; cursor: pointer; box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);">保存配置并生效</button>
+                <p id="config-tip" style="margin-top: 15px; color: #fcd34d; font-size: 13px;"></p>
+            </div>
+
+            <!-- 关闭按钮 -->
+            <button class="close-dev-modal" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #fcd34d; font-size: 24px; cursor: pointer;">×</button>
+        </div>
+    </div>
+
+    <!-- 主内容 -->
+    <main id="main-content" class="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+
+        <!-- 欢迎区域 -->
+        <section id="welcome-section" class="text-center mb-16">
+        </section>
+
+        <!-- 功能卡片区域 -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 mt-[100vh]">
+            <!-- ASCII → 进制转换 -->
+            <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <h3 class="text-xl font-bold mb-2 gradient-text">ASCII → 进制</h3>
+                <p class="text-gray-300 mb-4">将单个ASCII字符转换为二进制、十进制和十六进制表示</p>
+                <a href="#ascii-to-base" class="inline-block px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">
+                    开始使用
+                </a>
+            </div>
+            
+            <!-- 进制 → ASCII转换 -->
+            <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <h3 class="text-xl font-bold mb-2 gradient-text">进制 → ASCII</h3>
+                <p class="text-gray-300 mb-4">将二进制、十进制或十六进制数值转换为对应的ASCII字符</p>
+                <a href="#base-to-ascii" class="inline-block px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">
+                    开始使用
+                </a>
+            </div>
+            
+            <!-- 位运算可视化 -->
+            <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <h3 class="text-xl font-bold mb-2 gradient-text">位运算可视化</h3>
+                <p class="text-gray-300 mb-4">直观展示位运算过程和结果，支持与、或、异或、非、左移、右移</p>
+                <a href="#bit-operation" class="inline-block px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">
+                    开始使用
+                </a>
+            </div>
+            
+            <!-- Shor 算法 -->
+            <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <h3 class="text-xl font-bold mb-2 gradient-text">Shor 算法</h3>
+                <p class="text-gray-300 mb-4">使用量子算法原理分解整数，展示因数分解过程和结果</p>
+                <a href="#shor-algorithm" class="inline-block px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">
+                    开始使用
+                </a>
+            </div>
+            
+            <!-- SHA-256加密 -->
+            <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <h3 class="text-xl font-bold mb-2 gradient-text">SHA-256加密</h3>
+                <p class="text-gray-300 mb-4">将任意文本转换为SHA-256哈希值，支持各种长度的文本输入</p>
+                <a href="#sha256-encrypt" class="inline-block px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">
+                    开始使用
+                </a>
+            </div>
+            
+            <!-- 哈希盐 -->
+            <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <h3 class="text-xl font-bold mb-2 gradient-text">哈希盐</h3>
+                <p class="text-gray-300 mb-4">为密码添加随机盐值，增强哈希安全性，支持多种哈希算法</p>
+                <a href="#hash-salt" class="inline-block px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">
+                    开始使用
+                </a>
+            </div>
+        </section>
+        
+        <!-- ASCII → 进制转换功能 -->
+        <section id="ascii-to-base" class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 mb-16">
+            <h2 class="text-2xl font-bold mb-6 gradient-text">ASCII字符 → 进制转换</h2>
+            <div class="max-w-2xl mx-auto">
+                <div class="mb-6">
+                    <label for="ascii-char" class="block text-gray-300 mb-2">请输入单个ASCII字符</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="ascii-char" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：A, a, 1, !" maxlength="1">
+                        <button id="ascii-convert-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">转换</button>
+                    </div>
+                </div>
+                
+                <div class="bg-white/5 rounded-lg p-4">
+                    <h3 class="text-xl font-bold mb-4">转换结果</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-gray-400">输入字符</p>
+                            <p id="ascii-result-char" class="text-lg font-mono">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">十进制</p>
+                            <p id="ascii-result-decimal" class="text-lg font-mono">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">二进制</p>
+                            <p id="ascii-result-binary" class="text-lg font-mono">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">十六进制</p>
+                            <p id="ascii-result-hex" class="text-lg font-mono">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 进制 → ASCII转换功能 -->
+        <section id="base-to-ascii" class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 mb-16">
+            <h2 class="text-2xl font-bold mb-6 gradient-text">进制数值 → ASCII字符</h2>
+            <div class="max-w-2xl mx-auto">
+                <div class="mb-6">
+                    <label class="block text-gray-300 mb-2">请选择输入类型</label>
+                    <div class="flex gap-2 mb-4">
+                        <button class="base-type-btn px-4 py-2 rounded-lg bg-primary/80" data-type="binary">二进制</button>
+                        <button class="base-type-btn px-4 py-2 rounded-lg bg-white/5" data-type="decimal">十进制</button>
+                        <button class="base-type-btn px-4 py-2 rounded-lg bg-white/5" data-type="hex">十六进制</button>
+                    </div>
+                    
+                    <label for="base-value" class="block text-gray-300 mb-2">请输入数值</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="base-value" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：二进制输入1100001，十进制输入97，十六进制输入61">
+                        <button id="base-convert-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">转换</button>
+                    </div>
+                </div>
+                
+                <div class="bg-white/5 rounded-lg p-4">
+                    <h3 class="text-xl font-bold mb-4">转换结果</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-gray-400">输入数值</p>
+                            <p id="base-result-value" class="text-lg font-mono">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">十进制</p>
+                            <p id="base-result-decimal" class="text-lg font-mono">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">ASCII字符</p>
+                            <p id="base-result-char" class="text-lg font-mono">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">十六进制</p>
+                            <p id="base-result-hex" class="text-lg font-mono">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 位运算可视化功能 -->
+        <section id="bit-operation" class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 mb-16">
+            <h2 class="text-2xl font-bold mb-6 gradient-text">位运算可视化工具（32位无符号整数）</h2>
+            <p class="text-gray-300 mb-6">注：逻辑左移(&lt;&lt;)和逻辑右移(&gt;&gt;)操作均为逻辑移位，左移右侧补0，右移左侧补0；循环左移将左边移出的位补到右边，循环右移将右边移出的位补到左边。</p>
+            <div class="max-w-3xl mx-auto">
+                <div class="mb-6">
+                    <label class="block text-gray-300 mb-2">请选择运算符</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-primary/80" data-operator="&">按位与 (&)</button>
+                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="|">按位或 (|)</button>
+                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="^">按位异或 (^)</button>
+                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="~">按位非 (~)</button>
+                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="&lt;&lt;">逻辑左移 (&lt;&lt;)</button>
+                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="&gt;&gt;">逻辑右移 (&gt;&gt;)</button>
+                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="circular_left">循环左移</button>
+                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="circular_right">循环右移</button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="bit-num1" class="block text-gray-300 mb-2">数字1</label>
+                            <input type="text" id="bit-num1" class="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：123 或 0x7B 或 0b1111011">
+                        </div>
+                        <div>
+                            <label for="bit-num2" class="block text-gray-300 mb-2">数字2</label>
+                            <input type="text" id="bit-num2" class="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：123 或 0x7B 或 0b1111011 或 移位位数0-31">
+                        </div>
+                    </div>
+                    
+                    <button id="bit-calculate-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">计算</button>
+                </div>
+                
+                <div class="bg-white/5 rounded-lg p-4">
+                    <h3 class="text-xl font-bold mb-4">位运算可视化结果</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-gray-400">操作表达式</p>
+                            <p id="bit-expression" class="text-lg font-mono">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">数字1二进制</p>
+                            <p id="bit-num1-binary" class="text-lg font-mono break-all">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">数字2二进制</p>
+                            <p id="bit-num2-binary" class="text-lg font-mono break-all">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">结果二进制</p>
+                            <p id="bit-result-binary" class="text-lg font-mono break-all">-</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <p class="text-gray-400">结果十进制</p>
+                                <p id="bit-result-decimal" class="text-lg font-mono">-</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400">结果十六进制</p>
+                                <p id="bit-result-hex" class="text-lg font-mono">-</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400">位运算类型</p>
+                                <p id="bit-result-type" class="text-lg font-mono">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Shor 算法功能 -->
+        <section id="shor-algorithm" class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <h2 id="algorithm-title" class="text-2xl font-bold gradient-text">Shor 算法质数分解</h2>
+                <button id="algorithm-toggle" class="w-8 h-8 rounded-full bg-primary/80 hover:bg-primary flex items-center justify-center transition-colors">
+                    <i class="fa fa-exchange" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="max-w-2xl mx-auto">
+                <div class="mb-6">
+                    <label for="shor-number" class="block text-gray-300 mb-2">请输入要分解的整数</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="shor-number" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：15, 21, 35, 49, 121">
+                        <button id="shor-decompose-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">分解</button>
+                    </div>
+                    <p class="text-gray-400 mt-2">注意：由于是经典模拟实现，建议输入较小的整数以获得更准确的结果（小于1000）</p>
+                </div>
+                
+                <div class="bg-white/5 rounded-lg p-4">
+                    <h3 class="text-xl font-bold mb-4">分解结果</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-gray-400">输入整数</p>
+                            <p id="shor-result-number" class="text-lg font-mono">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">分解结果</p>
+                            <p id="shor-result-text" class="text-lg font-mono">-</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <h3 class="text-xl font-bold mb-4 gradient-text">关于 Shor 算法</h3>
+                    <p class="text-gray-300 mb-4">Shor 算法是一种量子算法，由 Peter Shor 于 1994 年提出，用于<strong>质数分解</strong>（整数因式分解）。该算法在量子计算机上可以指数级地加速质数分解过程，对密码学（特别是 RSA 加密）有重要影响。</p>
+                    <p class="text-gray-300 mb-4">本实现是经典计算机上的模拟版本，用于展示 Shor 算法的基本原理。它能够将任意整数分解为其质因数的乘积，例如：</p>
+                    <ul class="text-gray-300 list-disc list-inside mb-4">
+                        <li>输入 12 → 输出 12 = 2² × 3</li>
+                        <li>输入 15 → 输出 15 = 3 × 5</li>
+                        <li>输入 210 → 输出 210 = 2 × 3 × 5 × 7</li>
+                    </ul>
+                    <p class="text-gray-300">在实际的量子计算机上，Shor 算法会使用量子傅里叶变换来更高效地寻找周期，从而实现指数级加速。</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- SHA-256加密功能 -->
+        <section id="sha256-encrypt" class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 mb-16">
+            <h2 class="text-2xl font-bold mb-6 gradient-text">SHA-256加密</h2>
+            <div class="max-w-2xl mx-auto">
+                <div class="mb-6">
+                    <label for="sha256-text" class="block text-gray-300 mb-2">请输入要加密的文本</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="sha256-text" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：Hello, World! 或 123456">
+                        <button id="sha256-encrypt-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">加密</button>
+                    </div>
+                </div>
+                
+                <div class="bg-white/5 rounded-lg p-4">
+                    <h3 class="text-xl font-bold mb-4">加密结果</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-gray-400">输入文本</p>
+                            <p id="sha256-result-text" class="text-lg font-mono">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">SHA-256哈希值</p>
+                            <p id="sha256-result-hash" class="text-lg font-mono break-all">-</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <h3 class="text-xl font-bold mb-4 gradient-text">关于 SHA-256</h3>
+                    <p class="text-gray-300 mb-4">SHA-256是一种密码散列函数，是SHA-2（安全散列算法2）系列的一部分，由美国国家安全局（NSA）设计。它可以将任意长度的输入转换为固定长度（256位）的输出，通常以64个十六进制字符表示。</p>
+                    <p class="text-gray-300">SHA-256广泛应用于密码学领域，包括数字签名、消息认证码、随机数生成等。本实现采用经典的SHA-256算法，完全符合NIST标准，并通过了官方测试用例验证。</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 哈希盐功能 -->
+        <section id="hash-salt" class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 mb-16">
+            <h2 class="text-2xl font-bold mb-6 gradient-text">哈希盐 (Hash Salt)</h2>
+            <div class="max-w-2xl mx-auto">
+                <div class="mb-6">
+                    <label for="hash-text" class="block text-gray-300 mb-2">请输入要加密的文本</label>
+                    <input type="text" id="hash-text" class="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary mb-4" placeholder="例如：password123 或 123456">
+                    
+                    <label for="hash-salt" class="block text-gray-300 mb-2">盐值 (Salt)</label>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="hash-salt" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：mysecret123 或留空生成随机盐">
+                        <button id="hash-generate-salt-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">生成随机盐</button>
+                    </div>
+                    
+                    <label for="hash-algorithm" class="block text-gray-300 mb-2">选择哈希算法</label>
+                    <select id="hash-algorithm" class="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary mb-4">
+                        <option value="sha256">SHA-256</option>
+                        <option value="sha1">SHA-1</option>
+                        <option value="md5">MD5</option>
+                    </select>
+                    
+                    <button id="hash-generate-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">生成加盐哈希</button>
+                </div>
+                
+                <div class="bg-white/5 rounded-lg p-4">
+                    <h3 class="text-xl font-bold mb-4">加盐哈希结果</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-gray-400">输入文本</p>
+                            <p id="hash-result-text" class="text-lg font-mono">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">使用盐值</p>
+                            <p id="hash-result-salt" class="text-lg font-mono">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">哈希算法</p>
+                            <p id="hash-result-algorithm" class="text-lg font-mono">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400">加盐哈希值</p>
+                            <p id="hash-result-hash" class="text-lg font-mono break-all">-</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <h3 class="text-xl font-bold mb-4 gradient-text">关于哈希盐</h3>
+                    <p class="text-gray-300 mb-4">哈希盐是一种在哈希函数处理数据之前加入的随机数据，用于增加密码的安全性。通过为每个密码添加唯一的盐值，可以防止彩虹表攻击和相同密码产生相同哈希值的问题。</p>
+                    <p class="text-gray-300">本实现支持SHA-256、SHA-1和MD5三种哈希算法，可以手动输入盐值或生成随机盐值。加盐哈希的典型应用场景包括密码存储、数据完整性验证等。</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 页脚 -->
+        <footer class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 text-center">
+            <h3 class="text-xl font-bold mb-2 gradient-text">泡泡鲸密码箱</h3>
+            <p class="text-gray-300 mb-4">支持ASCII转换、位运算可视化、Shor算法、SHA-256加密和哈希盐功能</p>
+            <p class="text-gray-400">© 2026 泡泡鲸密码箱 | 请勿侵权</p>
+        </footer>
+    </main>
+
+    <!-- JavaScript -->
+    <script type="module" src="./js/main.js"></script>
+    
+    <!-- 贺新春功能脚本 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // ========== 核心配置区 ==========
+            const CONFIG = {
+                devHash: '2a7d2c2b89d9f9a8f7d6c5b4a3s2d1f0g9h8j7k6l5k4j3h2g1f0d9s8a7d6s5',
+                default: {
+                    password: '我爱你',
+                    redeemCode: '',
+                    redeemCodeUsed: false,
+                    redpacketLink: 'https://www.alipay.com',
+                    kouling: '',
+                    blessing: '新年快乐呀我的宝贝🐋！新的一年，愿你每天都有收不完的红包、吃不完的好吃的、做不完的开心事！我会继续给你写更多专属代码、做更多专属惊喜，永远做你的专属泡泡鲸呀～'
+                }
+            };
+
+            // 生成随机兑换码（大写字母+数字，排除 0 O 1 I L，必须包含字母和数字）
+            function generateRedeemCode() {
+                const digits = '23456789';
+                const letters = 'ABCDEFGHJKMNPQRSTUVWXYZ';
+                const allChars = digits + letters;
+                
+                // 确保至少包含1个数字和1个字母
+                let code = '';
+                code += digits.charAt(Math.floor(Math.random() * digits.length)); // 1个数字
+                code += letters.charAt(Math.floor(Math.random() * letters.length)); // 1个字母
+                
+                // 剩余8位随机
+                for (let i = 0; i < 8; i++) {
+                    code += allChars.charAt(Math.floor(Math.random() * allChars.length));
+                }
+                
+                // 打乱顺序
+                return code.split('').sort(() => Math.random() - 0.5).join('');
+            }
+
+            // ========== 元素获取 ==========
+            // 贺新春按钮
+            const springBtn = document.getElementById('spring-btn');
+            const springModal = document.getElementById('spring-modal');
+            const closeSpringModal = document.getElementById('close-spring-modal');
+            
+            // 过年主按钮
+            const newyearBtn = document.getElementById('bubble-newyear-btn');
+            const devModeText = document.getElementById('dev-mode-text');
+            
+            // 领红包弹窗
+            const redpacketModal = document.getElementById('redpacket-modal');
+            const redeemStep = document.getElementById('redeem-step');
+            const surpriseStep = document.getElementById('surprise-step');
+            const redeemInput = document.getElementById('redeem-input');
+            const redeemBtn = document.getElementById('redeem-btn');
+            const blessingText = document.getElementById('blessing-text');
+            const redpacketLink = document.getElementById('redpacket-link');
+            const closeModalBtns = document.querySelectorAll('.close-modal');
+
+            // 开发者弹窗
+            const devModal = document.getElementById('dev-modal');
+            const devHashStep = document.getElementById('dev-hash-step');
+            const devConfigStep = document.getElementById('dev-config-step');
+            const devHashInput = document.getElementById('dev-hash-input');
+            const devEnterBtn = document.getElementById('dev-enter-btn');
+            const configPassword = document.getElementById('config-password');
+            const configCode = document.getElementById('config-code');
+            const generateCodeBtn = document.getElementById('generate-code-btn');
+            const configLink = document.getElementById('config-link');
+            const configBlessing = document.getElementById('config-blessing');
+            const configSaveBtn = document.getElementById('config-save-btn');
+            const configTip = document.getElementById('config-tip');
+            const closeDevModalBtns = document.querySelectorAll('.close-dev-modal');
+
+            // ========== 初始化：读取本地存储的配置 ==========
+            let activeConfig = JSON.parse(localStorage.getItem('bubble_redpacket_config')) || CONFIG.default;
+            // 把配置回填到开发者页面
+            if (configPassword) configPassword.value = activeConfig.password || '';
+            if (configCode) configCode.value = activeConfig.redeemCode || '';
+            if (configLink) configLink.value = activeConfig.redpacketLink;
+            const configKoulingInit = document.getElementById('config-kouling');
+            if (configKoulingInit) configKoulingInit.value = activeConfig.kouling || '';
+            if (configBlessing) configBlessing.value = activeConfig.blessing;
+
+            // ========== 1. 贺新春按钮逻辑 ==========
+            // 点击贺新春按钮打开弹窗
+            if (springBtn && springModal) {
+                springBtn.addEventListener('click', () => {
+                    // 停止呼吸灯动画
+                    springBtn.classList.add('clicked');
+                    // 打开弹窗
+                    springModal.style.display = 'flex';
+                });
+            }
+
+            // 关闭贺新春弹窗
+            if (closeSpringModal && springModal) {
+                closeSpringModal.addEventListener('click', () => {
+                    springModal.style.display = 'none';
+                });
+            }
+
+            // ========== 2. 领红包核心逻辑 ==========
+            // 泡泡鲸过年按钮：打开领红包弹窗
+            if (newyearBtn && redpacketModal) {
+                newyearBtn.addEventListener('click', () => {
+                    springModal.style.display = 'none';
+                    redpacketModal.style.display = 'flex';
+                    if (redeemStep) redeemStep.style.display = 'block';
+                    if (surpriseStep) surpriseStep.style.display = 'none';
+                    if (redeemInput) redeemInput.value = '';
+                });
+            }
+
+            // 开发者模式文字点击事件
+            if (devModeText && devModal) {
+                devModeText.addEventListener('click', () => {
+                    springModal.style.display = 'none';
+                    devModal.style.display = 'flex';
+                    if (devHashStep) devHashStep.style.display = 'block';
+                    if (devConfigStep) devConfigStep.style.display = 'none';
+                    if (devHashInput) devHashInput.value = '';
+                });
+            }
+
+            // 暗号或兑换码校验
+            if (redeemBtn) {
+                redeemBtn.addEventListener('click', () => {
+                    const inputCode = redeemInput.value.trim();
+                    
+                    // 检查是否匹配暗号（可重复使用）
+                    if (inputCode === activeConfig.password) {
+                        // 暗号验证通过
+                        if (redeemStep) redeemStep.style.display = 'none';
+                        if (surpriseStep) surpriseStep.style.display = 'block';
+                        if (blessingText) blessingText.innerText = activeConfig.blessing;
+                        if (redpacketLink) redpacketLink.href = activeConfig.redpacketLink;
+                        // 显示口令
+                        const koulingValue = document.getElementById('kouling-value');
+                        const koulingText = document.getElementById('kouling-text');
+                        if (koulingValue && activeConfig.kouling) {
+                            koulingValue.innerText = activeConfig.kouling;
+                            if (koulingText) koulingText.style.display = 'block';
+                        } else if (koulingText) {
+                            koulingText.style.display = 'none';
+                        }
+                    }
+                    // 检查是否匹配兑换码（一次性）
+                    else if (inputCode === activeConfig.redeemCode && !activeConfig.redeemCodeUsed) {
+                        // 兑换码验证通过，标记为已使用
+                        activeConfig.redeemCodeUsed = true;
+                        localStorage.setItem('bubble_redpacket_config', JSON.stringify(activeConfig));
+                        
+                        if (redeemStep) redeemStep.style.display = 'none';
+                        if (surpriseStep) surpriseStep.style.display = 'block';
+                        if (blessingText) blessingText.innerText = activeConfig.blessing;
+                        if (redpacketLink) redpacketLink.href = activeConfig.redpacketLink;
+                        // 显示口令
+                        const koulingValue = document.getElementById('kouling-value');
+                        const koulingText = document.getElementById('kouling-text');
+                        if (koulingValue && activeConfig.kouling) {
+                            koulingValue.innerText = activeConfig.kouling;
+                            if (koulingText) koulingText.style.display = 'block';
+                        } else if (koulingText) {
+                            koulingText.style.display = 'none';
+                        }
+                    }
+                    else if (inputCode === activeConfig.redeemCode && activeConfig.redeemCodeUsed) {
+                        alert('这个兑换码已经被使用过了哦😾');
+                    }
+                    else {
+                        alert('暗号或兑换码不对哦，再检查一下吧😾');
+                    }
+                });
+            }
+            
+            // 复制口令按钮
+            const copyKoulingBtn = document.getElementById('copy-kouling-btn');
+            const copyTip = document.getElementById('copy-tip');
+            if (copyKoulingBtn) {
+                copyKoulingBtn.addEventListener('click', () => {
+                    const kouling = activeConfig.kouling || '';
+                    if (kouling) {
+                        navigator.clipboard.writeText(kouling).then(() => {
+                            if (copyTip) {
+                                copyTip.innerText = '✅ 口令复制成功，快去使用吧~';
+                                copyTip.style.opacity = '1';
+                                setTimeout(() => {
+                                    copyTip.style.opacity = '0';
+                                }, 2000);
+                            }
+                        }).catch(() => {
+                            // 降级方案
+                            const textArea = document.createElement('textarea');
+                            textArea.value = kouling;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                            if (copyTip) {
+                                copyTip.innerText = '✅ 口令复制成功，快去使用吧~';
+                                copyTip.style.opacity = '1';
+                                setTimeout(() => {
+                                    copyTip.style.opacity = '0';
+                                }, 2000);
+                            }
+                        });
+                    } else {
+                        if (copyTip) {
+                            copyTip.innerText = '暂无口令可复制';
+                            copyTip.style.color = '#ef4444';
+                            copyTip.style.opacity = '1';
+                            setTimeout(() => {
+                                copyTip.style.opacity = '0';
+                                copyTip.style.color = '#22c55e';
+                            }, 2000);
+                        }
+                    }
+                });
+            }
+
+            // ========== 3. 开发者模式核心逻辑 ==========
+            // 错误次数、锁定状态和锁定次数
+            let errorCount = parseInt(localStorage.getItem('dev_error_count') || '0');
+            let lockUntil = parseInt(localStorage.getItem('dev_lock_until') || '0');
+            let lockCount = parseInt(localStorage.getItem('dev_lock_count') || '0');
+            
+            // 根据锁定次数计算锁定时长
+            function getLockDuration() {
+                if (lockCount === 0) return 5 * 1000;      // 第1次锁定：5秒
+                if (lockCount === 1) return 60 * 1000;     // 第2次锁定：1分钟
+                return 3 * 60 * 1000;                       // 第3次及以后：3分钟
+            }
+            
+            // 哈希校验，进入开发者模式
+            if (devEnterBtn) {
+                devEnterBtn.addEventListener('click', () => {
+                    const now = Date.now();
+                    
+                    // 检查是否被锁定
+                    if (now < lockUntil) {
+                        const remainingSeconds = Math.ceil((lockUntil - now) / 1000);
+                        const minutes = Math.floor(remainingSeconds / 60);
+                        const seconds = remainingSeconds % 60;
+                        const timeStr = minutes > 0 ? `${minutes}分${seconds}秒` : `${seconds}秒`;
+                        alert(`开发者模式已被锁定，请等待 ${timeStr} 后再试😾`);
+                        return;
+                    }
+                    
+                    const inputHash = devHashInput.value.trim();
+                    if (inputHash === CONFIG.devHash) {
+                        // 验证成功，重置错误次数和锁定次数
+                        errorCount = 0;
+                        lockCount = 0;
+                        localStorage.setItem('dev_error_count', '0');
+                        localStorage.setItem('dev_lock_count', '0');
+                        if (devHashStep) devHashStep.style.display = 'none';
+                        if (devConfigStep) devConfigStep.style.display = 'block';
+                    } else {
+                        // 验证失败，增加错误次数
+                        errorCount++;
+                        localStorage.setItem('dev_error_count', errorCount.toString());
+                        
+                        const remaining = 5 - errorCount;
+                        if (remaining <= 0) {
+                            // 根据锁定次数计算时长
+                            const lockDuration = getLockDuration();
+                            lockUntil = now + lockDuration;
+                            localStorage.setItem('dev_lock_until', lockUntil.toString());
+                            
+                            // 增加锁定次数
+                            lockCount++;
+                            localStorage.setItem('dev_lock_count', lockCount.toString());
+                            
+                            // 重置错误次数
+                            errorCount = 0;
+                            localStorage.setItem('dev_error_count', '0');
+                            
+                            // 显示锁定时长
+                            const lockSeconds = lockDuration / 1000;
+                            let timeStr;
+                            if (lockSeconds >= 60) {
+                                const mins = Math.floor(lockSeconds / 60);
+                                const secs = lockSeconds % 60;
+                                timeStr = secs > 0 ? `${mins}分${secs}秒` : `${mins}分钟`;
+                            } else {
+                                timeStr = `${lockSeconds}秒`;
+                            }
+                            alert(`密码错误次数过多，开发者模式已被锁定${timeStr}😾`);
+                        } else {
+                            alert(`密码错误，无法进入开发者模式😾，当前还剩余${remaining}次。`);
+                        }
+                    }
+                });
+            }
+
+            // 随机生成兑换码按钮
+            if (generateCodeBtn && configCode) {
+                generateCodeBtn.addEventListener('click', () => {
+                    configCode.value = generateRedeemCode();
+                });
+            }
+
+            // ========== 历史记录功能 ==========
+            // 获取历史记录
+            function getHistory(key) {
+                return JSON.parse(localStorage.getItem(key) || '[]');
+            }
+            
+            // 添加历史记录
+            function addHistory(key, value, extra = {}) {
+                if (!value) return;
+                const history = getHistory(key);
+                // 检查是否已存在
+                const exists = history.some(item => item.value === value);
+                if (!exists) {
+                    history.unshift({
+                        value: value,
+                        time: new Date().toLocaleString(),
+                        ...extra
+                    });
+                    // 最多保留10条
+                    if (history.length > 10) history.pop();
+                    localStorage.setItem(key, JSON.stringify(history));
+                }
+            }
+            
+            // 渲染历史记录
+            function renderHistory(panelId, historyKey, inputId, showStatus = false) {
+                const panel = document.getElementById(panelId);
+                if (!panel) return;
+                
+                const history = getHistory(historyKey);
+                if (history.length === 0) {
+                    panel.innerHTML = '<p style="color: #6b7280; font-size: 13px; text-align: center;">暂无历史记录</p>';
+                    return;
+                }
+                
+                panel.innerHTML = history.map((item, index) => {
+                    const statusBadge = showStatus && item.used !== undefined 
+                        ? (item.used ? '<span style="color: #ef4444; font-size: 11px;">已使用</span>' : '<span style="color: #22c55e; font-size: 11px;">未使用</span>')
+                        : '';
+                    return `
+                        <div class="history-item" style="display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 5px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer;" 
+                             onclick="document.getElementById('${inputId}').value='${item.value}'">
+                            <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #e5e7eb; font-size: 13px;">
+                                ${item.value.length > 30 ? item.value.substring(0, 30) + '...' : item.value}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-left: 10px;">
+                                ${statusBadge}
+                                <span style="color: #9ca3af; font-size: 11px;">${item.time}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // 展开/收起历史记录
+            document.querySelectorAll('.toggle-arrow').forEach(arrow => {
+                arrow.addEventListener('click', () => {
+                    const targetId = arrow.getAttribute('data-target');
+                    const panel = document.getElementById(targetId);
+                    if (panel) {
+                        const isHidden = panel.style.display === 'none';
+                        panel.style.display = isHidden ? 'block' : 'none';
+                        arrow.textContent = isHidden ? '▲ 收起' : '▼ 历史记录';
+                        
+                        // 展开时渲染历史记录
+                        if (isHidden) {
+                            const historyKeyMap = {
+                                'password-history': 'history_password',
+                                'code-history': 'history_code',
+                                'link-history': 'history_link',
+                                'kouling-history': 'history_kouling',
+                                'blessing-history': 'history_blessing'
+                            };
+                            const inputIdMap = {
+                                'password-history': 'config-password',
+                                'code-history': 'config-code',
+                                'link-history': 'config-link',
+                                'kouling-history': 'config-kouling',
+                                'blessing-history': 'config-blessing'
+                            };
+                            renderHistory(targetId, historyKeyMap[targetId], inputIdMap[targetId], targetId === 'code-history');
+                        }
+                    }
+                });
+            });
+            
+            // 展开/收起新增面板
+            document.querySelectorAll('.toggle-add').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetId = btn.getAttribute('data-target');
+                    const panel = document.getElementById(targetId);
+                    if (panel) {
+                        const isHidden = panel.style.display === 'none';
+                        panel.style.display = isHidden ? 'block' : 'none';
+                        // 根据targetId确定类型名称
+                        const typeNames = {
+                            'password-add': '暗号',
+                            'code-add': '兑换码',
+                            'link-add': '链接',
+                            'kouling-add': '口令',
+                            'blessing-add': '祝福语'
+                        };
+                        const typeName = typeNames[targetId] || '';
+                        btn.textContent = isHidden ? `- 收起` : `+ 新增${typeName}`;
+                    }
+                });
+            });
+            
+            // 新增兑换码的生成按钮
+            const generateNewCodeBtn = document.getElementById('generate-new-code-btn');
+            const newCodeInput = document.getElementById('new-code-input');
+            if (generateNewCodeBtn && newCodeInput) {
+                generateNewCodeBtn.addEventListener('click', () => {
+                    newCodeInput.value = generateRedeemCode();
+                });
+            }
+            
+            // 保存新增内容按钮
+            document.querySelectorAll('.save-new-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const type = btn.getAttribute('data-type');
+                    const inputIdMap = {
+                        'password': 'new-password-input',
+                        'code': 'new-code-input',
+                        'link': 'new-link-input',
+                        'kouling': 'new-kouling-input',
+                        'blessing': 'new-blessing-input'
+                    };
+                    const historyKeyMap = {
+                        'password': 'history_password',
+                        'code': 'history_code',
+                        'link': 'history_link',
+                        'kouling': 'history_kouling',
+                        'blessing': 'history_blessing'
+                    };
+                    const mainInputIdMap = {
+                        'password': 'config-password',
+                        'code': 'config-code',
+                        'link': 'config-link',
+                        'kouling': 'config-kouling',
+                        'blessing': 'config-blessing'
+                    };
+                    
+                    const input = document.getElementById(inputIdMap[type]);
+                    const mainInput = document.getElementById(mainInputIdMap[type]);
+                    
+                    if (input && mainInput) {
+                        const value = input.value.trim();
+                        if (!value) {
+                            alert('请输入内容后再保存');
+                            return;
+                        }
+                        
+                        // 添加到历史记录
+                        addHistory(historyKeyMap[type], value, type === 'code' ? { used: false } : {});
+                        
+                        // 填充到主输入框
+                        mainInput.value = value;
+                        
+                        // 清空新增输入框
+                        input.value = '';
+                        
+                        // 提示成功
+                        const typeNames = {
+                            'password': '暗号',
+                            'code': '兑换码',
+                            'link': '链接',
+                            'kouling': '口令',
+                            'blessing': '祝福语'
+                        };
+                        if (configTip) {
+                            configTip.innerText = `✅ ${typeNames[type]}已添加并填充到输入框`;
+                            setTimeout(() => {
+                                if (configTip) configTip.innerText = '';
+                            }, 2000);
+                        }
+                    }
+                });
+            });
+
+            // 保存配置
+            if (configSaveBtn) {
+                configSaveBtn.addEventListener('click', () => {
+                    const configKouling = document.getElementById('config-kouling');
+                    const newConfig = {
+                        password: configPassword.value.trim(),
+                        redeemCode: configCode.value.trim(),
+                        redeemCodeUsed: false,
+                        redpacketLink: configLink.value.trim(),
+                        kouling: configKouling ? configKouling.value.trim() : '',
+                        blessing: configBlessing.value.trim()
+                    };
+
+                    if (!newConfig.password || !newConfig.redpacketLink || !newConfig.blessing) {
+                        if (configTip) configTip.innerText = '请把暗号、链接和祝福语都填完整哦！';
+                        return;
+                    }
+
+                    // 添加到历史记录
+                    addHistory('history_password', newConfig.password);
+                    addHistory('history_code', newConfig.redeemCode, { used: false });
+                    addHistory('history_link', newConfig.redpacketLink);
+                    addHistory('history_kouling', newConfig.kouling);
+                    addHistory('history_blessing', newConfig.blessing);
+
+                    // 保存到本地存储
+                    localStorage.setItem('bubble_redpacket_config', JSON.stringify(newConfig));
+                    activeConfig = newConfig;
+                    if (configTip) configTip.innerText = '✅ 配置保存成功！已经生效啦~';
+                    
+                    // 3秒后清空提示
+                    setTimeout(() => {
+                        if (configTip) configTip.innerText = '';
+                    }, 3000);
+                });
+            }
+
+            // ========== 关闭弹窗逻辑 ==========
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (redpacketModal) redpacketModal.style.display = 'none';
+                });
+            });
+
+            closeDevModalBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (devModal) devModal.style.display = 'none';
+                });
+            });
+        });
+    </script>
+    
+    <!-- 版本提示 -->
+    <div style="position: fixed; bottom: 10px; right: 15px; z-index: 9999; color: #6b7280; font-size: 12px; opacity: 0.6; user-select: none;">
+        注：此为v3.0内测版本，仅内部流通，非最终上线成果。
+    </div>
+</body>
+</html>
