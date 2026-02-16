@@ -112,7 +112,7 @@ function initSHA256() {
 function initHashSalt() {
     const generateBtn = document.getElementById('hash-generate-btn');
     const textInput = document.getElementById('hash-text');
-    const saltInput = document.getElementById('hash-salt');
+    const saltInput = document.getElementById('hash-salt-input');
     const generateSaltBtn = document.getElementById('hash-generate-salt-btn');
     const algorithmSelect = document.getElementById('hash-algorithm');
     const resultText = document.getElementById('hash-result-text');
@@ -120,19 +120,51 @@ function initHashSalt() {
     const resultAlgorithm = document.getElementById('hash-result-algorithm');
     const resultHash = document.getElementById('hash-result-hash');
     
-    if (generateBtn && textInput) {
-        // 生成随机盐
-        if (generateSaltBtn) {
-            generateSaltBtn.addEventListener('click', function() {
-                const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
-                let salt = '';
-                for (let i = 0; i < 16; i++) {
-                    salt += charset.charAt(Math.floor(Math.random() * charset.length));
-                }
-                saltInput.value = salt;
-            });
+    // 生成随机盐的函数
+    function generateRandomSalt() {
+        const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let salt = '';
+        for (let i = 0; i < 8; i++) {
+            salt += charset.charAt(Math.floor(Math.random() * charset.length));
+        }
+        return salt;
+    }
+    
+    // 简单的MD5实现
+    function md5(text) {
+        let hash = 0;
+        for (let i = 0; i < text.length; i++) {
+            const char = text.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
+        }
+        return hash.toString(16).padStart(32, '0');
+    }
+    
+    // 使用Web Crypto API进行哈希
+    async function generateHash(text, algorithm) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(text);
+        let hashBuffer;
+        
+        switch (algorithm) {
+            case 'sha256':
+                hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                break;
+            case 'sha1':
+                hashBuffer = await crypto.subtle.digest('SHA-1', data);
+                break;
+            case 'md5':
+                return md5(text);
+            default:
+                hashBuffer = await crypto.subtle.digest('SHA-256', data);
         }
         
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    
+    if (generateBtn && textInput) {
         // 生成加盐哈希
         generateBtn.addEventListener('click', function() {
             const text = textInput.value;
@@ -140,61 +172,10 @@ function initHashSalt() {
             const algorithm = algorithmSelect.value;
             
             if (text) {
-                // 开始计时
                 const startTime = performance.now();
-                
-                // 生成加盐哈希
                 const saltedText = text + salt;
                 
-                // 使用Web Crypto API进行哈希
-                async function generateHash(text, algorithm) {
-                    const encoder = new TextEncoder();
-                    const data = encoder.encode(text);
-                    let hashBuffer;
-                    
-                    switch (algorithm) {
-                        case 'sha256':
-                            hashBuffer = await crypto.subtle.digest('SHA-256', data);
-                            break;
-                        case 'sha1':
-                            hashBuffer = await crypto.subtle.digest('SHA-1', data);
-                            break;
-                        case 'md5':
-                            // Web Crypto API不支持MD5，使用简单实现
-                            return md5(text);
-                        default:
-                            hashBuffer = await crypto.subtle.digest('SHA-256', data);
-                    }
-                    
-                    const hashArray = Array.from(new Uint8Array(hashBuffer));
-                    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-                }
-                
-                // 简单的MD5实现
-                function md5(text) {
-                    // 这里使用一个简化的MD5实现
-                    // 注意：在实际应用中，应该使用更安全的哈希算法
-                    let hash = 0;
-                    for (let i = 0; i < text.length; i++) {
-                        const char = text.charCodeAt(i);
-                        hash = ((hash << 5) - hash) + char;
-                        hash = hash & hash; // Convert to 32-bit integer
-                    }
-                    return hash.toString(16).padStart(32, '0');
-                }
-                
-                // 生成随机盐的函数
-                function generateRandomSalt() {
-                    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                    let salt = '';
-                    for (let i = 0; i < 8; i++) {
-                        salt += charset.charAt(Math.floor(Math.random() * charset.length));
-                    }
-                    return salt;
-                }
-                
                 generateHash(saltedText, algorithm).then(hash => {
-                    // 结束计时
                     const endTime = performance.now();
                     const elapsedTime = (endTime - startTime).toFixed(5);
                     
@@ -208,7 +189,24 @@ function initHashSalt() {
             }
         });
     }
+    
+    // 生成随机盐（独立绑定，不依赖其他元素）
+    if (generateSaltBtn && saltInput) {
+        generateSaltBtn.addEventListener('click', function() {
+            const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+            let salt = '';
+            for (let i = 0; i < 16; i++) {
+                salt += charset.charAt(Math.floor(Math.random() * charset.length));
+            }
+            saltInput.value = salt;
+        });
+    }
 }
 
 // 当DOM加载完成后初始化应用
-document.addEventListener('DOMContentLoaded', initApp);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    // DOM已经加载完成，直接执行
+    initApp();
+}
