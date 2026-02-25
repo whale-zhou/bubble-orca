@@ -374,9 +374,9 @@
 
 /* 应用主题变量 */
 body {
-    background-color: var(--bg-color);
+    background-color: transparent;
     color: var(--text-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: color 0.3s ease;
 }
 
 /* 深色主题下的渐变背景 */
@@ -899,7 +899,7 @@ body {
 
 /* 背景图片容器 */
 #parallax-bg {
-    background-image: url('./images/starry-sky.jpg');
+    background-image: url('../images/starry-sky.jpg');
     background-size: cover;
     background-position: center;
     transition: transform 0.1s ease-out;
