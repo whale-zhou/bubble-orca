@@ -1,7 +1,7 @@
 // 主模块，用于初始化所有功能
 
 // 导入配置和模块
-import { currentLang } from './config.js';
+import { currentLang, STORAGE_KEYS, DEFAULT_SETTINGS } from './config.js';
 import { initSettings, updateParticles } from './settings.js';
 import { updatePageContent } from './language.js';
 import { initAsciiToBase, initBaseToAscii } from './functions/ascii.js';
@@ -22,8 +22,8 @@ function initApp() {
     initSettings();
     
     // 根据保存的设置初始化粒子
-    const savedCount = parseInt(localStorage.getItem('particleCount'));
-    const particleCount = isNaN(savedCount) ? 100 : savedCount;
+    const savedCount = parseInt(localStorage.getItem(STORAGE_KEYS.particleCount));
+    const particleCount = isNaN(savedCount) ? DEFAULT_SETTINGS.particleCount : savedCount;
     updateParticles(particleCount);
     
     // 初始化语言内容

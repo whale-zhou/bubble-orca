@@ -1,16 +1,22 @@
 import { switchLanguage } from './language.js';
+import { 
+    STORAGE_KEYS, 
+    DEFAULT_SETTINGS, 
+    PARTICLE_CONFIG,
+    MICRO_INTERACTION_DEFAULTS 
+} from './config.js';
 
-let currentParticleCount = parseInt(localStorage.getItem('particleCount')) || 100;
-let currentParticleMouseFollow = localStorage.getItem('particleMouseFollow') !== 'false';
+let currentParticleCount = parseInt(localStorage.getItem(STORAGE_KEYS.particleCount)) || DEFAULT_SETTINGS.particleCount;
+let currentParticleMouseFollow = localStorage.getItem(STORAGE_KEYS.particleMouseFollow) !== 'false';
 
 const microInteractionSettings = {
-    gradientText: localStorage.getItem('micro-gradient-text') !== 'false',
-    hoverFloat: localStorage.getItem('micro-hover-float') !== 'false',
-    glowBorder: localStorage.getItem('micro-glow-border') !== 'false',
-    ripple: localStorage.getItem('micro-ripple') !== 'false',
-    rotate3d: localStorage.getItem('micro-3d-rotate') !== 'false',
-    radialGlow: localStorage.getItem('micro-radial-glow') !== 'false',
-    shineSweep: localStorage.getItem('micro-shine-sweep') !== 'false'
+    gradientText: localStorage.getItem(STORAGE_KEYS.microGradientText) !== 'false',
+    hoverFloat: localStorage.getItem(STORAGE_KEYS.microHoverFloat) !== 'false',
+    glowBorder: localStorage.getItem(STORAGE_KEYS.microGlowBorder) !== 'false',
+    ripple: localStorage.getItem(STORAGE_KEYS.microRipple) !== 'false',
+    rotate3d: localStorage.getItem(STORAGE_KEYS.microRotate3d) !== 'false',
+    radialGlow: localStorage.getItem(STORAGE_KEYS.microRadialGlow) !== 'false',
+    shineSweep: localStorage.getItem(STORAGE_KEYS.microShineSweep) !== 'false'
 };
 
 function initSettings() {
@@ -63,7 +69,7 @@ function initParticleSettings() {
         btn.addEventListener('click', function() {
             const count = parseInt(this.dataset.count);
             
-            if (count === 200) {
+            if (count === PARTICLE_CONFIG.counts.high) {
                 showHighParticleConfirm(() => {
                     applyParticleSetting(count, particleBtns);
                 });
@@ -88,18 +94,18 @@ function applyParticleSetting(count, btns) {
         activeBtn.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%)';
     }
     
-    localStorage.setItem('particleCount', count);
+    localStorage.setItem(STORAGE_KEYS.particleCount, count);
     currentParticleCount = count;
     
     updateParticles(count);
 }
 
 function updateParticleButtonState(btns) {
-    const savedCount = parseInt(localStorage.getItem('particleCount'));
+    const savedCount = parseInt(localStorage.getItem(STORAGE_KEYS.particleCount));
     let targetCount = savedCount;
     
     if (isNaN(targetCount)) {
-        targetCount = 100;
+        targetCount = DEFAULT_SETTINGS.particleCount;
     }
     
     btns.forEach(btn => {
@@ -168,7 +174,7 @@ function updateParticles(count) {
     
     container.innerHTML = '';
     
-    if (count === 0) {
+    if (count === PARTICLE_CONFIG.counts.off) {
         return;
     }
     
@@ -182,17 +188,17 @@ function updateParticles(count) {
         particle.style.left = x + '%';
         particle.style.top = y + '%';
         
-        const size = Math.random() * 1 + 1;
+        const size = Math.random() * (PARTICLE_CONFIG.size.max - PARTICLE_CONFIG.size.min) + PARTICLE_CONFIG.size.min;
         particle.style.width = size + 'px';
         particle.style.height = size + 'px';
         
-        const hue = Math.random() * 30 + 190;
-        const brightness = Math.random() * 20 + 75;
+        const hue = Math.random() * (PARTICLE_CONFIG.color.hueMax - PARTICLE_CONFIG.color.hueMin) + PARTICLE_CONFIG.color.hueMin;
+        const brightness = Math.random() * (PARTICLE_CONFIG.color.brightnessMax - PARTICLE_CONFIG.color.brightnessMin) + PARTICLE_CONFIG.color.brightnessMin;
         particle.style.backgroundColor = `hsla(${hue}, 70%, ${brightness}%, 0.8)`;
         particle.style.boxShadow = `0 0 ${size * 2}px hsla(${hue}, 70%, ${brightness}%, 0.8)`;
         
         particle.style.animationDelay = Math.random() * 2 + 's';
-        particle.style.animationDuration = (Math.random() * 2 + 1) + 's';
+        particle.style.animationDuration = (Math.random() * (PARTICLE_CONFIG.animation.durationMax - PARTICLE_CONFIG.animation.durationMin) + PARTICLE_CONFIG.animation.durationMin) + 's';
         
         particle.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
         
@@ -226,18 +232,19 @@ function setupMouseFollow(particles) {
     
     function updateParticlesAnimation() {
         if (isMouseMoving) {
-            const particlesToUpdate = particles.slice(0, 50);
+            const particlesToUpdate = particles.slice(0, PARTICLE_CONFIG.mouseFollow.maxParticles);
             particlesToUpdate.forEach(particle => {
                 const dx = particle.x - mouseX;
                 const dy = particle.y - mouseY;
                 const distanceSquared = dx * dx + dy * dy;
+                const radiusSquared = PARTICLE_CONFIG.mouseFollow.radius * PARTICLE_CONFIG.mouseFollow.radius;
                 
-                if (distanceSquared < 625) {
+                if (distanceSquared < radiusSquared) {
                     const distance = Math.sqrt(distanceSquared);
-                    const force = (25 - distance) / 25;
+                    const force = (PARTICLE_CONFIG.mouseFollow.radius - distance) / PARTICLE_CONFIG.mouseFollow.radius;
                     const angle = Math.atan2(dy, dx);
-                    const moveX = Math.cos(angle) * force * 3;
-                    const moveY = Math.sin(angle) * force * 3;
+                    const moveX = Math.cos(angle) * force * PARTICLE_CONFIG.mouseFollow.force;
+                    const moveY = Math.sin(angle) * force * PARTICLE_CONFIG.mouseFollow.force;
                     
                     particle.element.style.transform = `translate(${moveX}px, ${moveY}px)`;
                     particle.element.style.opacity = 1;
@@ -273,7 +280,7 @@ function initLanguageSettings() {
         });
     });
     
-    const savedLang = localStorage.getItem('language') || 'zh-CN';
+    const savedLang = localStorage.getItem(STORAGE_KEYS.language) || DEFAULT_SETTINGS.language;
     langBtns.forEach(btn => {
         if (btn.dataset.lang === savedLang) {
             btn.style.opacity = '1';
@@ -289,38 +296,47 @@ function initMouseFollowSettings() {
     const toggle = document.getElementById('toggle-mouse-follow');
     if (!toggle) return;
     
-    toggle.checked = localStorage.getItem('particleMouseFollow') !== 'false';
+    toggle.checked = localStorage.getItem(STORAGE_KEYS.particleMouseFollow) !== 'false';
     
     toggle.addEventListener('change', function() {
         const enabled = this.checked;
-        localStorage.setItem('particleMouseFollow', enabled);
+        localStorage.setItem(STORAGE_KEYS.particleMouseFollow, enabled);
         currentParticleMouseFollow = enabled;
         
-        const savedCount = parseInt(localStorage.getItem('particleCount')) || 100;
+        const savedCount = parseInt(localStorage.getItem(STORAGE_KEYS.particleCount)) || DEFAULT_SETTINGS.particleCount;
         updateParticles(savedCount);
     });
 }
 
 function initMicroInteractionSettings() {
     const toggles = {
-        'toggle-gradient-text': 'gradientText',
-        'toggle-hover-float': 'hoverFloat',
-        'toggle-glow-border': 'glowBorder',
-        'toggle-ripple': 'ripple',
-        'toggle-3d-rotate': 'rotate3d',
-        'toggle-radial-glow': 'radialGlow',
-        'toggle-shine-sweep': 'shineSweep'
+        'toggle-gradient-text': STORAGE_KEYS.microGradientText,
+        'toggle-hover-float': STORAGE_KEYS.microHoverFloat,
+        'toggle-glow-border': STORAGE_KEYS.microGlowBorder,
+        'toggle-ripple': STORAGE_KEYS.microRipple,
+        'toggle-3d-rotate': STORAGE_KEYS.microRotate3d,
+        'toggle-radial-glow': STORAGE_KEYS.microRadialGlow,
+        'toggle-shine-sweep': STORAGE_KEYS.microShineSweep
     };
     
-    Object.entries(toggles).forEach(([id, key]) => {
+    Object.entries(toggles).forEach(([id, storageKey]) => {
         const toggle = document.getElementById(id);
         if (!toggle) return;
         
-        toggle.checked = microInteractionSettings[key];
+        toggle.checked = localStorage.getItem(storageKey) !== 'false';
         
         toggle.addEventListener('change', function() {
-            microInteractionSettings[key] = this.checked;
-            localStorage.setItem(`micro-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, this.checked);
+            const key = id.replace('toggle-', '').replace(/-/g, '');
+            const settingKey = key === 'gradienttext' ? 'gradientText' :
+                              key === 'hoverfloat' ? 'hoverFloat' :
+                              key === 'glowborder' ? 'glowBorder' :
+                              key === 'ripple' ? 'ripple' :
+                              key === '3drotate' ? 'rotate3d' :
+                              key === 'radialglow' ? 'radialGlow' :
+                              'shineSweep';
+            
+            microInteractionSettings[settingKey] = this.checked;
+            localStorage.setItem(storageKey, this.checked);
             applyMicroInteractionSettings();
         });
     });
