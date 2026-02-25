@@ -47,10 +47,6 @@
             .bit-transition {
                 transition: all 0.3s ease-in-out;
             }
-            .glass-effect {
-                backdrop-filter: blur(10px);
-                background-color: rgba(255, 255, 255, 0.7);
-            }
             .text-shadow {
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }
@@ -58,8 +54,335 @@
                 background-clip: text;
                 -webkit-background-clip: text;
                 color: transparent;
-                background-image: linear-gradient(45deg, #4361ee, #4cc9f0);
+                background-image: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+                background-size: 200% 200%;
+                animation: gradientShift 3s ease infinite;
             }
+            @keyframes gradientShift {
+                0%, 100% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+            }
+        }
+    </style>
+    
+    <!-- 微交互控制变量 -->
+    <style>
+        :root {
+            --enable-gradient-text: 1;
+            --enable-hover-float: 1;
+            --enable-glow-border: 1;
+            --enable-ripple: 1;
+            --enable-3d-rotate: 1;
+            --enable-radial-glow: 1;
+            --enable-shine-sweep: 1;
+        }
+        
+        /* 禁用字体渐变动画 */
+        .disable-gradient-text .gradient-text {
+            background: #e5e7eb !important;
+            -webkit-background-clip: unset !important;
+            background-clip: unset !important;
+            color: #e5e7eb !important;
+            animation: none !important;
+        }
+        
+        /* 禁用悬停上浮 */
+        .disable-hover-float .glass-card:hover,
+        .disable-hover-float .glass-feature-card:hover {
+            transform: none !important;
+        }
+        
+        /* 禁用发光边框 */
+        .disable-glow-border .glass-card-animated {
+            animation: none !important;
+        }
+        
+        /* 禁用涟漪动画 */
+        .disable-ripple .glass-btn::after {
+            display: none !important;
+        }
+        
+        /* 禁用3D旋转 */
+        .disable-3d-rotate .glass-feature-card:hover {
+            transform: translateY(-12px) !important;
+        }
+        
+        /* 禁用径向光晕 */
+        .disable-radial-glow .glass-feature-card::before {
+            display: none !important;
+        }
+        
+        /* 禁用光泽扫过 */
+        .disable-shine-sweep .glass-card::before {
+            display: none !important;
+        }
+    </style>
+    
+    <!-- 高级玻璃态效果样式 -->
+    <style>
+        /* 玻璃态卡片基础样式 */
+        .glass-card {
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(255, 255, 255, 0.02) 100%
+            );
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 玻璃态卡片光泽效果 */
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transition: left 0.5s ease;
+            pointer-events: none;
+        }
+        
+        .glass-card:hover::before {
+            left: 100%;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 60px rgba(102, 126, 234, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* 玻璃态功能卡片 */
+        .glass-feature-card {
+            background: linear-gradient(
+                145deg,
+                rgba(102, 126, 234, 0.15) 0%,
+                rgba(118, 75, 162, 0.1) 50%,
+                rgba(240, 147, 251, 0.08) 100%
+            );
+            backdrop-filter: blur(25px) saturate(200%);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+                0 2px 0 rgba(255, 255, 255, 0.1) inset;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glass-feature-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(
+                circle at 30% 30%,
+                rgba(255, 255, 255, 0.15) 0%,
+                transparent 50%
+            );
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        
+        .glass-feature-card:hover::before {
+            opacity: 1;
+        }
+        
+        .glass-feature-card:hover {
+            transform: translateY(-12px) rotateX(5deg);
+            box-shadow: 
+                0 30px 80px rgba(102, 126, 234, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+                0 2px 0 rgba(255, 255, 255, 0.15) inset;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+        
+        /* 玻璃态按钮 */
+        .glass-btn {
+            background: linear-gradient(
+                135deg,
+                rgba(102, 126, 234, 0.8) 0%,
+                rgba(118, 75, 162, 0.8) 100%
+            );
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            box-shadow: 
+                0 4px 15px rgba(102, 126, 234, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glass-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+        
+        .glass-btn:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .glass-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 25px rgba(102, 126, 234, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        .glass-btn:active {
+            transform: translateY(-1px);
+            box-shadow: 
+                0 4px 15px rgba(102, 126, 234, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 玻璃态输入框 */
+        .glass-input {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 
+                inset 0 2px 4px rgba(0, 0, 0, 0.1),
+                0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 
+                inset 0 2px 4px rgba(0, 0, 0, 0.1),
+                0 0 0 3px rgba(102, 126, 234, 0.1),
+                0 1px 0 rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+        
+        /* 玻璃态模态框 */
+        .glass-modal {
+            background: linear-gradient(
+                145deg,
+                rgba(30, 30, 50, 0.95) 0%,
+                rgba(20, 20, 40, 0.98) 100%
+            );
+            backdrop-filter: blur(30px) saturate(150%);
+            -webkit-backdrop-filter: blur(30px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 80px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+                0 1px 0 rgba(255, 255, 255, 0.1) inset;
+        }
+        
+        /* 玻璃态结果区域 */
+        .glass-result {
+            background: linear-gradient(
+                135deg,
+                rgba(16, 185, 129, 0.1) 0%,
+                rgba(52, 211, 153, 0.05) 100%
+            );
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            box-shadow: 
+                0 4px 20px rgba(16, 185, 129, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+        
+        /* 玻璃态导航栏 */
+        .glass-nav {
+            background: linear-gradient(
+                180deg,
+                rgba(10, 14, 39, 0.8) 0%,
+                rgba(10, 14, 39, 0.6) 100%
+            );
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 功能卡片图标样式 */
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        /* 功能卡片标签 */
+        .feature-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #a5b4fc;
+            margin-bottom: 12px;
+        }
+        
+        /* 动态边框效果 */
+        @keyframes borderGlow {
+            0%, 100% { 
+                border-color: rgba(102, 126, 234, 0.3);
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.1);
+            }
+            50% { 
+                border-color: rgba(240, 147, 251, 0.3);
+                box-shadow: 0 0 30px rgba(240, 147, 251, 0.15);
+            }
+        }
+        
+        .glass-card-animated {
+            animation: borderGlow 4s ease-in-out infinite;
         }
     </style>
     
@@ -231,9 +554,9 @@
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 1.2rem;
-            color: var(--text-color);
-            padding: 8px;
+            font-size: 1.5rem;
+            color: #ffffff;
+            padding: 10px;
             border-radius: 50%;
             transition: all 0.3s ease;
             display: flex;
@@ -242,39 +565,114 @@
         }
         
         #settings-btn:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.15);
             transform: scale(1.1);
         }
         
         /* 设置面板样式 */
         #settings-panel {
             position: fixed;
-            top: 60px;
-            right: 20px;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100vh;
+            background: linear-gradient(
+                180deg,
+                rgba(15, 15, 30, 0.98) 0%,
+                rgba(20, 20, 45, 0.98) 50%,
+                rgba(15, 15, 30, 0.98) 100%
+            );
+            backdrop-filter: blur(30px) saturate(150%);
+            -webkit-backdrop-filter: blur(30px) saturate(150%);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
             z-index: 1000;
-            min-width: 280px;
             display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         #settings-panel.show {
-            display: block;
-            animation: fadeIn 0.3s ease-out;
+            display: flex;
+            transform: translateX(0);
         }
         
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+        #settings-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        #settings-panel::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        #settings-panel::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 3px;
+        }
+        
+        #settings-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.7);
+        }
+        
+        .settings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            background: rgba(15, 15, 30, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+        
+        .settings-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+        }
+        
+        .settings-close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #ffffff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .settings-close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .settings-content {
+            padding: 20px 24px;
+            flex: 1;
+        }
+        
+        .settings-section {
+            margin-bottom: 28px;
+        }
+        
+        .settings-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #8b5cf6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
         }
         
         .setting-item {
@@ -283,15 +681,93 @@
         
         .setting-label {
             display: block;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: var(--text-color);
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #ffffff;
+            font-size: 14px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
         
         .setting-controls {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+        }
+        
+        .setting-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .setting-toggle:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-toggle-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #e5e7eb;
+        }
+        
+        .setting-toggle-desc {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: 0.3s;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: #9ca3af;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+            background-color: #ffffff;
+        }
+        
+        .toggle-switch input:focus + .toggle-slider {
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
         }
         
         .setting-btn {
@@ -648,38 +1124,131 @@
     </div>
 
     <!-- 贺新春按钮 -->
-    <button id="spring-btn" class="fixed top-4 right-20 z-50 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-lg">
+    <button id="spring-btn" class="fixed top-4 right-20 z-50 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-lg hidden">
         贺新春
     </button>
     
     <!-- 设置按钮 -->
-    <button id="settings-btn" class="fixed top-4 right-4 z-50">
-        <i class="fa fa-cog" aria-hidden="true"></i>
+    <button id="settings-btn" class="glass-btn fixed top-4 right-4 z-50 w-10 h-10 rounded-full flex items-center justify-center">
+        <i class="fa fa-cog text-white" aria-hidden="true"></i>
     </button>
     
     <!-- 设置面板 -->
     <div id="settings-panel">
-        <h3 class="text-lg font-bold mb-4">设置</h3>
-        <div class="setting-item">
-            <label class="setting-label">粒子数量</label>
-            <div class="setting-controls">
-                <button class="setting-btn">关闭</button>
-                <button class="setting-btn">(...)</button>
-                <button class="setting-btn">(...)</button>
-            </div>
+        <div class="settings-header">
+            <h3>⚙️ 设置</h3>
+            <button class="settings-close-btn" id="settings-close-btn">×</button>
         </div>
-        <div class="setting-item">
-            <label class="setting-label">语言切换</label>
-            <div class="setting-controls">
-                <button class="setting-btn">中文</button>
-                <button class="setting-btn">English</button>
+        <div class="settings-content">
+            <!-- 背景设置 -->
+            <div class="settings-section">
+                <div class="settings-section-title">🎨 背景设置</div>
+                <div class="setting-item">
+                    <label class="setting-label">背景粒子数量</label>
+                    <div class="setting-controls">
+                        <button class="particle-btn glass-btn px-3 py-1.5 text-white text-sm" data-count="0">关闭</button>
+                        <button class="particle-btn glass-btn px-3 py-1.5 text-white text-sm" data-count="50">低</button>
+                        <button class="particle-btn glass-btn px-3 py-1.5 text-white text-sm" data-count="100">中</button>
+                        <button class="particle-btn glass-btn px-3 py-1.5 text-white text-sm" data-count="200">高</button>
+                    </div>
+                </div>
+                <div class="setting-toggle">
+                    <div>
+                        <div class="setting-toggle-label">粒子鼠标跟随</div>
+                        <div class="setting-toggle-desc">鼠标移动时粒子产生排斥效果</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-mouse-follow" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
             </div>
-        </div>
-        <div class="setting-item">
-            <label class="setting-label">粒子鼠标跟随</label>
-            <div class="setting-controls">
-                <button class="setting-btn">打开</button>
-                <button class="setting-btn">关闭</button>
+            
+            <!-- 微交互设置 -->
+            <div class="settings-section">
+                <div class="settings-section-title">✨ 微交互设置</div>
+                <div class="setting-toggle">
+                    <div>
+                        <div class="setting-toggle-label">字体渐变动画</div>
+                        <div class="setting-toggle-desc">标题文字颜色动态渐变</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-gradient-text" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <div>
+                        <div class="setting-toggle-label">悬停上浮效果</div>
+                        <div class="setting-toggle-desc">鼠标悬停时卡片上浮</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-hover-float" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <div>
+                        <div class="setting-toggle-label">发光边框效果</div>
+                        <div class="setting-toggle-desc">卡片边框动态发光动画</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-glow-border" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <div>
+                        <div class="setting-toggle-label">涟漪点击动画</div>
+                        <div class="setting-toggle-desc">按钮点击时涟漪扩散效果</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-ripple" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <div>
+                        <div class="setting-toggle-label">3D旋转悬停</div>
+                        <div class="setting-toggle-desc">卡片悬停时轻微3D旋转</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-3d-rotate" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <div>
+                        <div class="setting-toggle-label">径向光晕效果</div>
+                        <div class="setting-toggle-desc">悬停时卡片中心光晕</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-radial-glow" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-toggle">
+                    <div>
+                        <div class="setting-toggle-label">光泽扫过动画</div>
+                        <div class="setting-toggle-desc">悬停时光泽从左到右扫过</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-shine-sweep" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- 语言设置 -->
+            <div class="settings-section">
+                <div class="settings-section-title">🌐 语言设置</div>
+                <div class="setting-item">
+                    <label class="setting-label">界面语言</label>
+                    <div class="setting-controls">
+                        <button class="lang-btn glass-btn px-4 py-2 text-white text-sm" data-lang="zh-CN">中文</button>
+                        <button class="lang-btn glass-btn px-4 py-2 text-white text-sm" data-lang="en">English</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -927,92 +1496,104 @@
         </section>
 
         <!-- 功能卡片区域 -->
-        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 mt-[100vh]">
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16 mt-[100vh]">
             <!-- ASCII → 进制转换 -->
-            <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-                <h3 class="text-xl font-bold mb-2 gradient-text">ASCII → 进制</h3>
-                <p class="text-gray-300 mb-4">将单个ASCII字符转换为二进制、十进制和十六进制表示</p>
-                <a href="#ascii-to-base" class="inline-block px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">
-                    开始使用
+            <div class="glass-feature-card p-8">
+                <div class="feature-icon">🔤</div>
+                <span class="feature-tag">编码转换</span>
+                <h3 class="text-xl font-bold mb-3 gradient-text">ASCII → 进制</h3>
+                <p class="text-gray-300 mb-6 leading-relaxed">将单个ASCII字符转换为二进制、十进制和十六进制表示</p>
+                <a href="#ascii-to-base" class="glass-btn inline-block px-6 py-3 text-white font-medium">
+                    开始使用 →
                 </a>
             </div>
             
             <!-- 进制 → ASCII转换 -->
-            <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-                <h3 class="text-xl font-bold mb-2 gradient-text">进制 → ASCII</h3>
-                <p class="text-gray-300 mb-4">将二进制、十进制或十六进制数值转换为对应的ASCII字符</p>
-                <a href="#base-to-ascii" class="inline-block px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">
-                    开始使用
+            <div class="glass-feature-card p-8">
+                <div class="feature-icon">🔢</div>
+                <span class="feature-tag">解码转换</span>
+                <h3 class="text-xl font-bold mb-3 gradient-text">进制 → ASCII</h3>
+                <p class="text-gray-300 mb-6 leading-relaxed">将二进制、十进制或十六进制数值转换为对应的ASCII字符</p>
+                <a href="#base-to-ascii" class="glass-btn inline-block px-6 py-3 text-white font-medium">
+                    开始使用 →
                 </a>
             </div>
             
             <!-- 位运算可视化 -->
-            <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-                <h3 class="text-xl font-bold mb-2 gradient-text">位运算可视化</h3>
-                <p class="text-gray-300 mb-4">直观展示位运算过程和结果，支持与、或、异或、非、左移、右移</p>
-                <a href="#bit-operation" class="inline-block px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">
-                    开始使用
+            <div class="glass-feature-card p-8">
+                <div class="feature-icon">⚡</div>
+                <span class="feature-tag">可视化</span>
+                <h3 class="text-xl font-bold mb-3 gradient-text">位运算可视化</h3>
+                <p class="text-gray-300 mb-6 leading-relaxed">直观展示位运算过程和结果，支持与、或、异或、非、左移、右移</p>
+                <a href="#bit-operation" class="glass-btn inline-block px-6 py-3 text-white font-medium">
+                    开始使用 →
                 </a>
             </div>
             
             <!-- Shor 算法 -->
-            <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-                <h3 class="text-xl font-bold mb-2 gradient-text">Shor 算法</h3>
-                <p class="text-gray-300 mb-4">使用量子算法原理分解整数，展示因数分解过程和结果</p>
-                <a href="#shor-algorithm" class="inline-block px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">
-                    开始使用
+            <div class="glass-feature-card p-8 glass-card-animated">
+                <div class="feature-icon">⚛️</div>
+                <span class="feature-tag">量子算法</span>
+                <h3 class="text-xl font-bold mb-3 gradient-text">Shor 算法</h3>
+                <p class="text-gray-300 mb-6 leading-relaxed">使用量子算法原理分解整数，展示因数分解过程和结果</p>
+                <a href="#shor-algorithm" class="glass-btn inline-block px-6 py-3 text-white font-medium">
+                    开始使用 →
                 </a>
             </div>
             
             <!-- SHA-256加密 -->
-            <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-                <h3 class="text-xl font-bold mb-2 gradient-text">SHA-256加密</h3>
-                <p class="text-gray-300 mb-4">将任意文本转换为SHA-256哈希值，支持各种长度的文本输入</p>
-                <a href="#sha256-encrypt" class="inline-block px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">
-                    开始使用
+            <div class="glass-feature-card p-8 glass-card-animated">
+                <div class="feature-icon">🔐</div>
+                <span class="feature-tag">哈希加密</span>
+                <h3 class="text-xl font-bold mb-3 gradient-text">SHA-256加密</h3>
+                <p class="text-gray-300 mb-6 leading-relaxed">将任意文本转换为SHA-256哈希值，支持各种长度的文本输入</p>
+                <a href="#sha256-encrypt" class="glass-btn inline-block px-6 py-3 text-white font-medium">
+                    开始使用 →
                 </a>
             </div>
             
             <!-- 哈希盐 -->
-            <div class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-                <h3 class="text-xl font-bold mb-2 gradient-text">哈希盐</h3>
-                <p class="text-gray-300 mb-4">为密码添加随机盐值，增强哈希安全性，支持多种哈希算法</p>
-                <a href="#hash-salt" class="inline-block px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">
-                    开始使用
+            <div class="glass-feature-card p-8">
+                <div class="feature-icon">🧂</div>
+                <span class="feature-tag">安全增强</span>
+                <h3 class="text-xl font-bold mb-3 gradient-text">哈希盐</h3>
+                <p class="text-gray-300 mb-6 leading-relaxed">为密码添加随机盐值，增强哈希安全性，支持多种哈希算法</p>
+                <a href="#hash-salt" class="glass-btn inline-block px-6 py-3 text-white font-medium">
+                    开始使用 →
                 </a>
             </div>
         </section>
         
         <!-- ASCII → 进制转换功能 -->
-        <section id="ascii-to-base" class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 mb-16">
+        <section id="ascii-to-base" class="glass-card p-8 mb-16">
             <h2 class="text-2xl font-bold mb-6 gradient-text">ASCII字符 → 进制转换</h2>
             <div class="max-w-2xl mx-auto">
                 <div class="mb-6">
-                    <label for="ascii-char" class="block text-gray-300 mb-2">请输入单个ASCII字符</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="ascii-char" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：A, a, 1, !" maxlength="1">
-                        <button id="ascii-convert-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">转换</button>
+                    <label for="ascii-char" class="block text-gray-300 mb-2 font-medium">请输入单个ASCII字符</label>
+                    <div class="flex gap-3">
+                        <input type="text" id="ascii-char" class="glass-input flex-1 px-5 py-3 text-white placeholder-gray-400" placeholder="例如：A, a, 1, !" maxlength="1">
+                        <button id="ascii-convert-btn" class="glass-btn px-6 py-3 text-white font-medium">转换</button>
                     </div>
                 </div>
                 
-                <div class="bg-white/5 rounded-lg p-4">
-                    <h3 class="text-xl font-bold mb-4">转换结果</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="glass-result p-6">
+                    <h3 class="text-xl font-bold mb-4 text-emerald-400">转换结果</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <p class="text-gray-400">输入字符</p>
-                            <p id="ascii-result-char" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">输入字符</p>
+                            <p id="ascii-result-char" class="text-lg font-mono text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">十进制</p>
-                            <p id="ascii-result-decimal" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">十进制</p>
+                            <p id="ascii-result-decimal" class="text-lg font-mono text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">二进制</p>
-                            <p id="ascii-result-binary" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">二进制</p>
+                            <p id="ascii-result-binary" class="text-lg font-mono text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">十六进制</p>
-                            <p id="ascii-result-hex" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">十六进制</p>
+                            <p id="ascii-result-hex" class="text-lg font-mono text-white">-</p>
                         </div>
                     </div>
                 </div>
@@ -1020,42 +1601,42 @@
         </section>
         
         <!-- 进制 → ASCII转换功能 -->
-        <section id="base-to-ascii" class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 mb-16">
+        <section id="base-to-ascii" class="glass-card p-8 mb-16">
             <h2 class="text-2xl font-bold mb-6 gradient-text">进制数值 → ASCII字符</h2>
             <div class="max-w-2xl mx-auto">
                 <div class="mb-6">
-                    <label class="block text-gray-300 mb-2">请选择输入类型</label>
-                    <div class="flex gap-2 mb-4">
-                        <button class="base-type-btn px-4 py-2 rounded-lg bg-primary/80" data-type="binary">二进制</button>
-                        <button class="base-type-btn px-4 py-2 rounded-lg bg-white/5" data-type="decimal">十进制</button>
-                        <button class="base-type-btn px-4 py-2 rounded-lg bg-white/5" data-type="hex">十六进制</button>
+                    <label class="block text-gray-300 mb-2 font-medium">请选择输入类型</label>
+                    <div class="flex gap-3 mb-4">
+                        <button class="base-type-btn glass-btn px-5 py-2.5 text-white" data-type="binary">二进制</button>
+                        <button class="base-type-btn glass-btn px-5 py-2.5 text-white opacity-60" data-type="decimal">十进制</button>
+                        <button class="base-type-btn glass-btn px-5 py-2.5 text-white opacity-60" data-type="hex">十六进制</button>
                     </div>
                     
-                    <label for="base-value" class="block text-gray-300 mb-2">请输入数值</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="base-value" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：二进制输入1100001，十进制输入97，十六进制输入61">
-                        <button id="base-convert-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">转换</button>
+                    <label for="base-value" class="block text-gray-300 mb-2 font-medium">请输入数值</label>
+                    <div class="flex gap-3">
+                        <input type="text" id="base-value" class="glass-input flex-1 px-5 py-3 text-white placeholder-gray-400" placeholder="例如：二进制输入1100001，十进制输入97，十六进制输入61">
+                        <button id="base-convert-btn" class="glass-btn px-6 py-3 text-white font-medium">转换</button>
                     </div>
                 </div>
                 
-                <div class="bg-white/5 rounded-lg p-4">
-                    <h3 class="text-xl font-bold mb-4">转换结果</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="glass-result p-6">
+                    <h3 class="text-xl font-bold mb-4 text-emerald-400">转换结果</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <p class="text-gray-400">输入数值</p>
-                            <p id="base-result-value" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">输入数值</p>
+                            <p id="base-result-value" class="text-lg font-mono text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">十进制</p>
-                            <p id="base-result-decimal" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">十进制</p>
+                            <p id="base-result-decimal" class="text-lg font-mono text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">ASCII字符</p>
-                            <p id="base-result-char" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">ASCII字符</p>
+                            <p id="base-result-char" class="text-lg font-mono text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">十六进制</p>
-                            <p id="base-result-hex" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">十六进制</p>
+                            <p id="base-result-hex" class="text-lg font-mono text-white">-</p>
                         </div>
                     </div>
                 </div>
@@ -1063,60 +1644,60 @@
         </section>
         
         <!-- 位运算可视化功能 -->
-        <section id="bit-operation" class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 mb-16">
-            <h2 class="text-2xl font-bold mb-6 gradient-text">位运算可视化工具（32位无符号整数）</h2>
-            <p class="text-gray-300 mb-6">注：逻辑左移(&lt;&lt;)和逻辑右移(&gt;&gt;)操作均为逻辑移位，左移右侧补0，右移左侧补0；循环左移将左边移出的位补到右边，循环右移将右边移出的位补到左边。</p>
+        <section id="bit-operation" class="glass-card p-8 mb-16">
+            <h2 class="text-2xl font-bold mb-4 gradient-text">位运算可视化工具（32位无符号整数）</h2>
+            <p class="text-gray-400 mb-6 text-sm leading-relaxed">注：逻辑左移(&lt;&lt;)和逻辑右移(&gt;&gt;)操作均为逻辑移位，左移右侧补0，右移左侧补0；循环左移将左边移出的位补到右边，循环右移将右边移出的位补到左边。</p>
             <div class="max-w-3xl mx-auto">
                 <div class="mb-6">
-                    <label class="block text-gray-300 mb-2">请选择运算符</label>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
-                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-primary/80" data-operator="&">按位与 (&)</button>
-                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="|">按位或 (|)</button>
-                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="^">按位异或 (^)</button>
-                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="~">按位非 (~)</button>
-                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="&lt;&lt;">逻辑左移 (&lt;&lt;)</button>
-                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="&gt;&gt;">逻辑右移 (&gt;&gt;)</button>
-                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="circular_left">循环左移</button>
-                        <button class="bit-operator-btn px-3 py-2 rounded-lg bg-white/5" data-operator="circular_right">循环右移</button>
+                    <label class="block text-gray-300 mb-2 font-medium">请选择运算符</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <button class="bit-operator-btn glass-btn px-4 py-2.5 text-white text-sm" data-operator="&">按位与 (&)</button>
+                        <button class="bit-operator-btn glass-btn px-4 py-2.5 text-white text-sm opacity-60" data-operator="|">按位或 (|)</button>
+                        <button class="bit-operator-btn glass-btn px-4 py-2.5 text-white text-sm opacity-60" data-operator="^">按位异或 (^)</button>
+                        <button class="bit-operator-btn glass-btn px-4 py-2.5 text-white text-sm opacity-60" data-operator="~">按位非 (~)</button>
+                        <button class="bit-operator-btn glass-btn px-4 py-2.5 text-white text-sm opacity-60" data-operator="&lt;&lt;">逻辑左移 (&lt;&lt;)</button>
+                        <button class="bit-operator-btn glass-btn px-4 py-2.5 text-white text-sm opacity-60" data-operator="&gt;&gt;">逻辑右移 (&gt;&gt;)</button>
+                        <button class="bit-operator-btn glass-btn px-4 py-2.5 text-white text-sm opacity-60" data-operator="circular_left">循环左移</button>
+                        <button class="bit-operator-btn glass-btn px-4 py-2.5 text-white text-sm opacity-60" data-operator="circular_right">循环右移</button>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label for="bit-num1" class="block text-gray-300 mb-2">数字1</label>
-                            <input type="text" id="bit-num1" class="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：123 或 0x7B 或 0b1111011">
+                            <label for="bit-num1" class="block text-gray-300 mb-2 font-medium">数字1</label>
+                            <input type="text" id="bit-num1" class="glass-input w-full px-5 py-3 text-white placeholder-gray-400" placeholder="例如：123 或 0x7B 或 0b1111011">
                         </div>
                         <div>
-                            <label for="bit-num2" class="block text-gray-300 mb-2">数字2</label>
-                            <input type="text" id="bit-num2" class="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：123 或 0x7B 或 0b1111011 或 移位位数0-31">
+                            <label for="bit-num2" class="block text-gray-300 mb-2 font-medium">数字2</label>
+                            <input type="text" id="bit-num2" class="glass-input w-full px-5 py-3 text-white placeholder-gray-400" placeholder="例如：123 或 0x7B 或 0b1111011 或 移位位数0-31">
                         </div>
                     </div>
                     
-                    <button id="bit-calculate-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">计算</button>
+                    <button id="bit-calculate-btn" class="glass-btn px-6 py-3 text-white font-medium">计算</button>
                 </div>
                 
-                <div class="bg-white/5 rounded-lg p-4">
-                    <h3 class="text-xl font-bold mb-4">位运算可视化结果</h3>
+                <div class="glass-result p-6">
+                    <h3 class="text-xl font-bold mb-4 text-emerald-400">位运算可视化结果</h3>
                     <div class="space-y-4">
                         <div>
-                            <p class="text-gray-400">操作表达式</p>
-                            <p id="bit-expression" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">操作表达式</p>
+                            <p id="bit-expression" class="text-lg font-mono text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">数字1二进制</p>
-                            <p id="bit-num1-binary" class="text-lg font-mono break-all">-</p>
+                            <p class="text-gray-400 text-sm mb-1">数字1二进制</p>
+                            <p id="bit-num1-binary" class="text-lg font-mono break-all text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">数字2二进制</p>
-                            <p id="bit-num2-binary" class="text-lg font-mono break-all">-</p>
+                            <p class="text-gray-400 text-sm mb-1">数字2二进制</p>
+                            <p id="bit-num2-binary" class="text-lg font-mono break-all text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">结果二进制</p>
-                            <p id="bit-result-binary" class="text-lg font-mono break-all">-</p>
+                            <p class="text-gray-400 text-sm mb-1">结果二进制</p>
+                            <p id="bit-result-binary" class="text-lg font-mono break-all text-white">-</p>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
-                                <p class="text-gray-400">结果十进制</p>
-                                <p id="bit-result-decimal" class="text-lg font-mono">-</p>
+                                <p class="text-gray-400 text-sm mb-1">结果十进制</p>
+                                <p id="bit-result-decimal" class="text-lg font-mono text-white">-</p>
                             </div>
                             <div>
                                 <p class="text-gray-400">结果十六进制</p>
@@ -1133,34 +1714,83 @@
         </section>
         
         <!-- Shor 算法功能 -->
-        <section id="shor-algorithm" class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 mb-16">
+        <section id="shor-algorithm" class="glass-card glass-card-animated p-8 mb-16">
             <div class="flex items-center gap-3 mb-6">
                 <h2 id="algorithm-title" class="text-2xl font-bold gradient-text">Shor 算法质数分解</h2>
-                <button id="algorithm-toggle" class="w-8 h-8 rounded-full bg-primary/80 hover:bg-primary flex items-center justify-center transition-colors">
+                <button id="algorithm-toggle" class="glass-btn w-10 h-10 rounded-full flex items-center justify-center">
                     <i class="fa fa-exchange" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="max-w-2xl mx-auto">
                 <div class="mb-6">
-                    <label for="shor-number" class="block text-gray-300 mb-2">请输入要分解的整数</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="shor-number" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：15, 21, 35, 49, 121">
-                        <button id="shor-decompose-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">分解</button>
+                    <label for="shor-number" class="block text-gray-300 mb-2 font-medium">请输入要分解的整数</label>
+                    <div class="flex gap-3">
+                        <input type="text" id="shor-number" class="glass-input flex-1 px-5 py-3 text-white placeholder-gray-400" placeholder="例如：15, 21, 35, 49, 121">
+                        <button id="shor-decompose-btn" class="glass-btn px-6 py-3 text-white font-medium">分解</button>
                     </div>
-                    <p class="text-gray-400 mt-2">注意：由于是经典模拟实现，建议输入较小的整数以获得更准确的结果（小于1000）</p>
+                    <p class="text-gray-400 mt-3 text-sm">注意：由于是经典模拟实现，建议输入较小的整数以获得更准确的结果（小于1000）</p>
                 </div>
                 
-                <div class="bg-white/5 rounded-lg p-4">
-                    <h3 class="text-xl font-bold mb-4">分解结果</h3>
+                <div class="glass-result p-6">
+                    <h3 class="text-xl font-bold mb-4 text-emerald-400">分解结果</h3>
                     <div class="space-y-4">
                         <div>
-                            <p class="text-gray-400">输入整数</p>
-                            <p id="shor-result-number" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">输入整数</p>
+                            <p id="shor-result-number" class="text-lg font-mono text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">分解结果</p>
-                            <p id="shor-result-text" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">分解结果</p>
+                            <p id="shor-result-text" class="text-lg font-mono text-white">-</p>
                         </div>
+                    </div>
+                    <!-- 加载状态指示器 -->
+                    <div id="loading-indicator" class="hidden mt-4">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"></div>
+                            <span id="loading-message" class="text-gray-400">正在计算...</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div id="progress-bar" class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <!-- 取消按钮 -->
+                    <button id="cancel-factorize-btn" class="hidden mt-3 px-4 py-2 bg-red-500/80 hover:bg-red-500 rounded-lg transition-colors text-sm">
+                        取消计算
+                    </button>
+                    <!-- 查看按钮 -->
+                    <div class="mt-4 flex gap-3 flex-wrap">
+                        <button id="view-circuit-btn" class="hidden group relative px-6 py-3 rounded-xl text-sm font-bold text-white overflow-hidden transition-all duration-300 hover:-translate-y-1 active:translate-y-0"
+                            style="background: linear-gradient(145deg, #6366f1 0%, #4338ca 40%, #312e81 100%); box-shadow: 0 8px 32px rgba(79, 70, 229, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -3px 0 rgba(0, 0, 0, 0.25); border: 1px solid rgba(129, 140, 248, 0.4);">
+                            <span class="relative z-10 flex items-center gap-2">
+                                <span class="text-lg">⚛️</span>
+                                <span class="drop-shadow-sm">查看量子电路图(图表)</span>
+                            </span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-white/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </button>
+                        <button id="view-quantum-animation-btn" class="hidden group relative px-6 py-3 rounded-xl text-sm font-bold text-white overflow-hidden transition-all duration-300 hover:-translate-y-1 active:translate-y-0"
+                            style="background: linear-gradient(145deg, #6366f1 0%, #4338ca 40%, #312e81 100%); box-shadow: 0 8px 32px rgba(79, 70, 229, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -3px 0 rgba(0, 0, 0, 0.25); border: 1px solid rgba(129, 140, 248, 0.4);">
+                            <span class="relative z-10 flex items-center gap-2">
+                                <span class="text-lg">🌊</span>
+                                <span class="drop-shadow-sm">查看量子态演化(动画)</span>
+                            </span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-white/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </button>
+                        <button id="view-pipeline-static-btn" class="hidden group relative px-6 py-3 rounded-xl text-sm font-bold text-white overflow-hidden transition-all duration-300 hover:-translate-y-1 active:translate-y-0"
+                            style="background: linear-gradient(145deg, #8b5cf6 0%, #7c3aed 40%, #6d28d9 100%); box-shadow: 0 8px 32px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -3px 0 rgba(0, 0, 0, 0.2); border: 1px solid rgba(139, 92, 246, 0.4);">
+                            <span class="relative z-10 flex items-center gap-2">
+                                <span class="text-lg">📊</span>
+                                <span class="drop-shadow-sm">查看算法流水线(图表)</span>
+                            </span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-white/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </button>
+                        <button id="view-pipeline-btn" class="hidden group relative px-6 py-3 rounded-xl text-sm font-bold text-white overflow-hidden transition-all duration-300 hover:-translate-y-1 active:translate-y-0"
+                            style="background: linear-gradient(145deg, #8b5cf6 0%, #7c3aed 40%, #6d28d9 100%); box-shadow: 0 8px 32px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -3px 0 rgba(0, 0, 0, 0.2); border: 1px solid rgba(139, 92, 246, 0.4);">
+                            <span class="relative z-10 flex items-center gap-2">
+                                <span class="text-lg">🔄</span>
+                                <span class="drop-shadow-sm">查看算法流水线(动画)</span>
+                            </span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-white/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </button>
                     </div>
                 </div>
                 
@@ -1179,97 +1809,108 @@
         </section>
         
         <!-- SHA-256加密功能 -->
-        <section id="sha256-encrypt" class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 mb-16">
+        <section id="sha256-encrypt" class="glass-card glass-card-animated p-8 mb-16">
             <h2 class="text-2xl font-bold mb-6 gradient-text">SHA-256加密</h2>
             <div class="max-w-2xl mx-auto">
                 <div class="mb-6">
-                    <label for="sha256-text" class="block text-gray-300 mb-2">请输入要加密的文本</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="sha256-text" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：Hello, World! 或 123456">
-                        <button id="sha256-encrypt-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">加密</button>
+                    <label for="sha256-text" class="block text-gray-300 mb-2 font-medium">请输入要加密的文本</label>
+                    <div class="flex gap-3">
+                        <input type="text" id="sha256-text" class="glass-input flex-1 px-5 py-3 text-white placeholder-gray-400" placeholder="例如：Hello, World! 或 123456">
+                        <button id="sha256-encrypt-btn" class="glass-btn px-6 py-3 text-white font-medium">加密</button>
                     </div>
                 </div>
                 
-                <div class="bg-white/5 rounded-lg p-4">
-                    <h3 class="text-xl font-bold mb-4">加密结果</h3>
+                <div class="glass-result p-6">
+                    <h3 class="text-xl font-bold mb-4 text-emerald-400">加密结果</h3>
                     <div class="space-y-4">
                         <div>
-                            <p class="text-gray-400">输入文本</p>
-                            <p id="sha256-result-text" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">输入文本</p>
+                            <p id="sha256-result-text" class="text-lg font-mono text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">SHA-256哈希值</p>
-                            <p id="sha256-result-hash" class="text-lg font-mono break-all">-</p>
+                            <p class="text-gray-400 text-sm mb-1">SHA-256哈希值</p>
+                            <p id="sha256-result-hash" class="text-lg font-mono break-all text-white">-</p>
                         </div>
+                    </div>
+                    <!-- 查看动画按钮 -->
+                    <div class="mt-4">
+                        <button id="view-sha256-animation-btn" class="hidden group relative px-6 py-3 rounded-xl text-sm font-bold text-white overflow-hidden transition-all duration-300 hover:-translate-y-1 active:translate-y-0"
+                            style="background: linear-gradient(145deg, #10b981 0%, #059669 40%, #047857 100%); box-shadow: 0 8px 32px rgba(16, 185, 129, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -3px 0 rgba(0, 0, 0, 0.25); border: 1px solid rgba(52, 211, 153, 0.4);">
+                            <span class="relative z-10 flex items-center gap-2">
+                                <span class="text-lg">🌊</span>
+                                <span class="drop-shadow-sm">查看算法动画</span>
+                            </span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-white/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </button>
                     </div>
                 </div>
                 
-                <div class="mt-8">
+                <div class="mt-8 glass-card p-6">
                     <h3 class="text-xl font-bold mb-4 gradient-text">关于 SHA-256</h3>
-                    <p class="text-gray-300 mb-4">SHA-256是一种密码散列函数，是SHA-2（安全散列算法2）系列的一部分，由美国国家安全局（NSA）设计。它可以将任意长度的输入转换为固定长度（256位）的输出，通常以64个十六进制字符表示。</p>
-                    <p class="text-gray-300">SHA-256广泛应用于密码学领域，包括数字签名、消息认证码、随机数生成等。本实现采用经典的SHA-256算法，完全符合NIST标准，并通过了官方测试用例验证。</p>
+                    <p class="text-gray-300 mb-4 leading-relaxed">SHA-256是一种密码散列函数，是SHA-2（安全散列算法2）系列的一部分，由美国国家安全局（NSA）设计。它可以将任意长度的输入转换为固定长度（256位）的输出，通常以64个十六进制字符表示。</p>
+                    <p class="text-gray-300 leading-relaxed">SHA-256广泛应用于密码学领域，包括数字签名、消息认证码、随机数生成等。本实现采用经典的SHA-256算法，完全符合NIST标准，并通过了官方测试用例验证。</p>
                 </div>
             </div>
         </section>
         
         <!-- 哈希盐功能 -->
-        <section id="hash-salt" class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 mb-16">
+        <section id="hash-salt" class="glass-card p-8 mb-16">
             <h2 class="text-2xl font-bold mb-6 gradient-text">哈希盐 (Hash Salt)</h2>
             <div class="max-w-2xl mx-auto">
                 <div class="mb-6">
-                    <label for="hash-text" class="block text-gray-300 mb-2">请输入要加密的文本</label>
-                    <input type="text" id="hash-text" class="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary mb-4" placeholder="例如：password123 或 123456">
+                    <label for="hash-text" class="block text-gray-300 mb-2 font-medium">请输入要加密的文本</label>
+                    <input type="text" id="hash-text" class="glass-input w-full px-5 py-3 text-white placeholder-gray-400 mb-4" placeholder="例如：password123 或 123456">
                     
-                    <label for="hash-salt-input" class="block text-gray-300 mb-2">盐值 (Salt)</label>
-                    <div class="flex gap-2 mb-4">
-                        <input type="text" id="hash-salt-input" class="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：mysecret123 或留空生成随机盐">
-                        <button id="hash-generate-salt-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">生成随机盐</button>
+                    <label for="hash-salt-input" class="block text-gray-300 mb-2 font-medium">盐值 (Salt)</label>
+                    <div class="flex gap-3 mb-4">
+                        <input type="text" id="hash-salt-input" class="glass-input flex-1 px-5 py-3 text-white placeholder-gray-400" placeholder="例如：mysecret123 或留空生成随机盐">
+                        <button id="hash-generate-salt-btn" class="glass-btn px-5 py-3 text-white font-medium">生成随机盐</button>
                     </div>
                     
-                    <label for="hash-algorithm" class="block text-gray-300 mb-2">选择哈希算法</label>
-                    <select id="hash-algorithm" class="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary mb-4">
+                    <label for="hash-algorithm" class="block text-gray-300 mb-2 font-medium">选择哈希算法</label>
+                    <select id="hash-algorithm" class="glass-input w-full px-5 py-3 text-white mb-4">
                         <option value="sha256">SHA-256</option>
                         <option value="sha1">SHA-1</option>
                         <option value="md5">MD5</option>
                     </select>
                     
-                    <button id="hash-generate-btn" class="px-4 py-2 bg-primary/80 hover:bg-primary rounded-lg transition-colors">生成加盐哈希</button>
+                    <button id="hash-generate-btn" class="glass-btn px-6 py-3 text-white font-medium">生成加盐哈希</button>
                 </div>
                 
-                <div class="bg-white/5 rounded-lg p-4">
-                    <h3 class="text-xl font-bold mb-4">加盐哈希结果</h3>
+                <div class="glass-result p-6">
+                    <h3 class="text-xl font-bold mb-4 text-emerald-400">加盐哈希结果</h3>
                     <div class="space-y-4">
                         <div>
-                            <p class="text-gray-400">输入文本</p>
-                            <p id="hash-result-text" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">输入文本</p>
+                            <p id="hash-result-text" class="text-lg font-mono text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">使用盐值</p>
-                            <p id="hash-result-salt" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">使用盐值</p>
+                            <p id="hash-result-salt" class="text-lg font-mono text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">哈希算法</p>
-                            <p id="hash-result-algorithm" class="text-lg font-mono">-</p>
+                            <p class="text-gray-400 text-sm mb-1">哈希算法</p>
+                            <p id="hash-result-algorithm" class="text-lg font-mono text-white">-</p>
                         </div>
                         <div>
-                            <p class="text-gray-400">加盐哈希值</p>
-                            <p id="hash-result-hash" class="text-lg font-mono break-all">-</p>
+                            <p class="text-gray-400 text-sm mb-1">加盐哈希值</p>
+                            <p id="hash-result-hash" class="text-lg font-mono break-all text-white">-</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="mt-8">
+                <div class="mt-8 glass-card p-6">
                     <h3 class="text-xl font-bold mb-4 gradient-text">关于哈希盐</h3>
-                    <p class="text-gray-300 mb-4">哈希盐是一种在哈希函数处理数据之前加入的随机数据，用于增加密码的安全性。通过为每个密码添加唯一的盐值，可以防止彩虹表攻击和相同密码产生相同哈希值的问题。</p>
-                    <p class="text-gray-300">本实现支持SHA-256、SHA-1和MD5三种哈希算法，可以手动输入盐值或生成随机盐值。加盐哈希的典型应用场景包括密码存储、数据完整性验证等。</p>
+                    <p class="text-gray-300 mb-4 leading-relaxed">哈希盐是一种在哈希函数处理数据之前加入的随机数据，用于增加密码的安全性。通过为每个密码添加唯一的盐值，可以防止彩虹表攻击和相同密码产生相同哈希值的问题。</p>
+                    <p class="text-gray-300 leading-relaxed">本实现支持SHA-256、SHA-1和MD5三种哈希算法，可以手动输入盐值或生成随机盐值。加盐哈希的典型应用场景包括密码存储、数据完整性验证等。</p>
                 </div>
             </div>
         </section>
         
         <!-- 页脚 -->
-        <footer class="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 text-center">
-            <h3 class="text-xl font-bold mb-2 gradient-text">泡泡鲸密码箱</h3>
-            <p class="text-gray-300 mb-4">支持ASCII转换、位运算可视化、Shor算法、SHA-256加密和哈希盐功能</p>
+        <footer class="glass-card p-8 text-center">
+            <h3 class="text-xl font-bold mb-3 gradient-text">泡泡鲸密码箱</h3>
+            <p class="text-gray-300 mb-4 leading-relaxed">支持ASCII转换、位运算可视化、Shor算法、SHA-256加密和哈希盐功能</p>
             <p class="text-gray-400">© 2026 泡泡鲸密码箱 | 请勿侵权</p>
         </footer>
     </main>

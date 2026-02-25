@@ -2,21 +2,29 @@
 
 // 导入配置和模块
 import { currentLang } from './config.js';
-import { initParticles } from './particles.js';
-import { initSettings } from './settings.js';
+import { initSettings, updateParticles } from './settings.js';
 import { updatePageContent } from './language.js';
 import { initAsciiToBase, initBaseToAscii } from './functions/ascii.js';
 import { initBitOperation } from './functions/bitOperation.js';
+import { initFactorize } from './functions/factorize.js';
 import { initShorAlgorithm } from './functions/shor.js';
+import { initAlgorithmSwitch } from './functions/algorithmSwitch.js';
+import { initHexinchun } from './functions/hexinchun.js';
 import { updateButtonStyles } from './utils.js';
+import { showSHA256Animation } from './functions/sha256Animation.js';
+
+// 将 showSHA256Animation 暴露到全局
+window.showSHA256Animation = showSHA256Animation;
 
 // 初始化应用
 function initApp() {
-    // 初始化粒子效果
-    initParticles();
-    
-    // 初始化设置功能
+    // 初始化设置功能（包含粒子初始化）
     initSettings();
+    
+    // 根据保存的设置初始化粒子
+    const savedCount = parseInt(localStorage.getItem('particleCount'));
+    const particleCount = isNaN(savedCount) ? 100 : savedCount;
+    updateParticles(particleCount);
     
     // 初始化语言内容
     updatePageContent();
@@ -25,7 +33,14 @@ function initApp() {
     initAsciiToBase();
     initBaseToAscii();
     initBitOperation();
+    
+    // 初始化质数分解模块（Shor和经典算法）
     initShorAlgorithm();
+    initFactorize();
+    initAlgorithmSwitch();
+    
+    // 初始化贺新春红包功能
+    initHexinchun();
     
     // 初始化其他功能
     initSHA256();
@@ -76,15 +91,18 @@ function initSHA256() {
     const textInput = document.getElementById('sha256-text');
     const resultText = document.getElementById('sha256-result-text');
     const resultHash = document.getElementById('sha256-result-hash');
+    const viewAnimationBtn = document.getElementById('view-sha256-animation-btn');
+    
+    let lastHashedText = '';
     
     if (encryptBtn && textInput) {
         encryptBtn.addEventListener('click', function() {
             const text = textInput.value;
             if (text) {
-                // 开始计时
+                lastHashedText = text;
+                
                 const startTime = performance.now();
                 
-                // 直接使用Web Crypto API进行SHA-256哈希
                 async function sha256(text) {
                     const encoder = new TextEncoder();
                     const data = encoder.encode(text);
@@ -94,15 +112,26 @@ function initSHA256() {
                 }
                 
                 sha256(text).then(hash => {
-                    // 结束计时
                     const endTime = performance.now();
                     const elapsedTime = (endTime - startTime).toFixed(5);
                     
                     resultText.textContent = text;
                     resultHash.textContent = hash + ` (耗时: ${elapsedTime}ms)`;
+                    
+                    if (viewAnimationBtn) {
+                        viewAnimationBtn.style.display = 'inline-block';
+                    }
                 });
             } else {
                 alert('请输入要加密的文本');
+            }
+        });
+    }
+    
+    if (viewAnimationBtn) {
+        viewAnimationBtn.addEventListener('click', function() {
+            if (lastHashedText && typeof showSHA256Animation === 'function') {
+                showSHA256Animation(lastHashedText);
             }
         });
     }
