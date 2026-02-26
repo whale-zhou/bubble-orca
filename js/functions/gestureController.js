@@ -38,6 +38,14 @@ class GestureController {
         this.onGesture = null;
         this.voiceAssistant = null;
         
+        this.gestureEnabled = {
+            fist: true,
+            pinch: true,
+            zoom_out: true,
+            swipe: true,
+            clap: true
+        };
+        
         this.styles = null;
     }
     
@@ -653,6 +661,8 @@ class GestureController {
     }
     
     detectSwipe(landmarks) {
+        if (!this.gestureEnabled.swipe) return;
+        
         const wrist = landmarks[0];
         const indexTip = landmarks[8];
         const middleTip = landmarks[12];
@@ -718,6 +728,8 @@ class GestureController {
     }
     
     detectClap(handsLandmarks, now) {
+        if (!this.gestureEnabled.clap) return;
+        
         if (now - this.lastClapTime < this.clapCooldown) return;
         
         const leftWrist = handsLandmarks[0][0];
@@ -735,6 +747,10 @@ class GestureController {
     }
     
     executeGesture(gesture, landmarks) {
+        if (!this.gestureEnabled[gesture]) {
+            return;
+        }
+        
         console.log('🎯 执行手势:', gesture);
         
         switch (gesture) {
@@ -919,6 +935,23 @@ class GestureController {
     
     setVoiceAssistant(va) {
         this.voiceAssistant = va;
+    }
+    
+    setGestureEnabled(gesture, enabled) {
+        if (this.gestureEnabled.hasOwnProperty(gesture)) {
+            this.gestureEnabled[gesture] = enabled;
+            localStorage.setItem(`gesture_${gesture}_enabled`, enabled);
+        }
+    }
+    
+    loadGestureSettings() {
+        const gestures = ['fist', 'pinch', 'zoom_out', 'swipe', 'clap'];
+        gestures.forEach(g => {
+            const saved = localStorage.getItem(`gesture_${g}_enabled`);
+            if (saved !== null) {
+                this.gestureEnabled[g] = saved === 'true';
+            }
+        });
     }
     
     getStatus() {

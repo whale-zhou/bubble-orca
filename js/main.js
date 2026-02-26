@@ -103,11 +103,13 @@ function initVoiceAssistant() {
 async function initGestureControl() {
     const toggle = document.getElementById('toggle-gesture-control');
     const statusEl = document.getElementById('gesture-control-status');
+    const togglesContainer = document.getElementById('gesture-toggles');
     
     if (!toggle) return;
     
     await gestureController.init();
     gestureController.setVoiceAssistant(voiceAssistant);
+    gestureController.loadGestureSettings();
     
     const savedEnabled = localStorage.getItem('gestureControlEnabled') === 'true';
     toggle.checked = savedEnabled;
@@ -117,6 +119,7 @@ async function initGestureControl() {
             if (success && statusEl) {
                 statusEl.textContent = '✅ 手势控制已启用';
                 statusEl.style.color = '#22c55e';
+                if (togglesContainer) togglesContainer.style.display = 'block';
             }
         });
     }
@@ -129,6 +132,7 @@ async function initGestureControl() {
                     statusEl.textContent = '✅ 手势控制已启用';
                     statusEl.style.color = '#22c55e';
                 }
+                if (togglesContainer) togglesContainer.style.display = 'block';
             } else {
                 this.checked = false;
                 if (statusEl) {
@@ -141,6 +145,50 @@ async function initGestureControl() {
             if (statusEl) {
                 statusEl.textContent = '手势控制已关闭';
                 statusEl.style.color = '#9ca3af';
+            }
+            if (togglesContainer) togglesContainer.style.display = 'none';
+        }
+    });
+    
+    // 各手势开关
+    const gestureToggles = {
+        'gesture-fist': 'fist',
+        'gesture-pinch': 'pinch',
+        'gesture-zoom-out': 'zoom_out',
+        'gesture-swipe': 'swipe',
+        'gesture-clap': 'clap'
+    };
+    
+    Object.entries(gestureToggles).forEach(([id, gesture]) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.checked = gestureController.gestureEnabled[gesture];
+            el.addEventListener('change', function() {
+                gestureController.setGestureEnabled(gesture, this.checked);
+            });
+        }
+    });
+}
+
+// 初始化快捷键
+function initHotkeys() {
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'F1') {
+            e.preventDefault();
+            if (voiceAssistant.isEnabled) {
+                voiceAssistant.showNeonBorder();
+                voiceAssistant.speak('我在');
+            } else {
+                showError('请先开启语音助手', new Error('语音助手未启用'));
+            }
+        }
+        
+        if (e.key === 'F2') {
+            e.preventDefault();
+            const toggle = document.getElementById('toggle-gesture-control');
+            if (toggle) {
+                toggle.checked = !toggle.checked;
+                toggle.dispatchEvent(new Event('change'));
             }
         }
     });
@@ -213,6 +261,9 @@ function initApp() {
     
     // 初始化手势控制
     initGestureControl();
+    
+    // 初始化快捷键
+    initHotkeys();
     
     // 初始化其他功能
     initSHA256();
