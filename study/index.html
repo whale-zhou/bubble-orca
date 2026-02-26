@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>泡泡鲸密码箱 - 学习模式</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/study.css">
+</head>
+<body class="study-mode">
+    <!-- 顶部导航栏 -->
+    <header class="top-bar">
+        <div class="logo-area">
+            <span class="logo-icon">🐋</span>
+            <span class="logo-text">泡泡鲸密码箱</span>
+            <span class="mode-badge">学习模式</span>
+        </div>
+        
+        <nav class="algorithm-tabs">
+            <button class="tab-btn active" data-algorithm="sha256">SHA-256</button>
+            <button class="tab-btn" data-algorithm="ascii">ASCII</button>
+            <button class="tab-btn" data-algorithm="shor">Shor</button>
+            <button class="tab-btn" data-algorithm="grover">Grover</button>
+            <button class="tab-btn" data-algorithm="rsa">RSA</button>
+            <button class="tab-btn" data-algorithm="ecc">ECC</button>
+            <button class="tab-btn" data-algorithm="aes">AES</button>
+            <div class="tab-more">
+                <button class="tab-btn">更多</button>
+                <div class="tab-dropdown">
+                    <button class="tab-btn" data-algorithm="hash">哈希函数</button>
+                    <button class="tab-btn" data-algorithm="encoding">编码转换</button>
+                    <button class="tab-btn" data-algorithm="prime">素数生成</button>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="header-actions">
+            <button class="action-btn" id="history-btn" title="历史记录">
+                <i class="fa fa-history"></i>
+            </button>
+            <button class="action-btn" id="settings-btn" title="设置">
+                <i class="fa fa-cog"></i>
+            </button>
+            <a href="../index.html" class="action-btn" title="切换模式">
+                <i class="fa fa-exchange"></i>
+            </a>
+        </div>
+    </header>
+    
+    <main class="main-container">
+        <!-- 左侧工具栏 -->
+        <aside class="tool-sidebar">
+            <div class="tool-section">
+                <div class="tool-section-title">公式</div>
+                <div class="tool-buttons">
+                    <button class="tool-btn" data-tool="formula-common">常用公式</button>
+                    <button class="tool-btn" data-tool="formula-symbols">数学符号</button>
+                    <button class="tool-btn" data-tool="formula-custom">自定义</button>
+                </div>
+            </div>
+            
+            <div class="tool-section">
+                <div class="tool-section-title">动画</div>
+                <div class="tool-buttons">
+                    <button class="tool-btn" data-tool="animation-sha256">SHA-256</button>
+                    <button class="tool-btn" data-tool="animation-shor">Shor算法</button>
+                    <button class="tool-btn" data-tool="animation-rsa">RSA加密</button>
+                </div>
+            </div>
+            
+            <div class="tool-section">
+                <div class="tool-section-title">输入</div>
+                <div class="tool-buttons">
+                    <button class="tool-btn" data-tool="input-text">文本输入</button>
+                    <button class="tool-btn" data-tool="input-file">文件导入</button>
+                    <button class="tool-btn" data-tool="input-params">参数设置</button>
+                </div>
+            </div>
+            
+            <div class="tool-section">
+                <div class="tool-section-title">验证</div>
+                <div class="tool-buttons">
+                    <button class="tool-btn" data-tool="verify-result">结果验证</button>
+                    <button class="tool-btn" data-tool="verify-steps">步骤检查</button>
+                </div>
+            </div>
+            
+            <div class="tool-section">
+                <div class="tool-section-title">导出</div>
+                <div class="tool-buttons">
+                    <button class="tool-btn" data-tool="export-png">导出PNG</button>
+                    <button class="tool-btn" data-tool="export-code">导出代码</button>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- 中央工作区 -->
+        <div class="workspace">
+            <!-- 输入区 -->
+            <div class="workspace-panel input-panel">
+                <div class="panel-header">
+                    <span class="panel-title">输入</span>
+                    <div class="panel-actions">
+                        <select id="input-format">
+                            <option value="text">文本</option>
+                            <option value="hex">十六进制</option>
+                            <option value="base64">Base64</option>
+                            <option value="binary">二进制</option>
+                        </select>
+                        <button class="small-btn" id="clear-input">清空</button>
+                    </div>
+                </div>
+                <textarea id="input-area" placeholder="在此输入内容..."></textarea>
+            </div>
+            
+            <!-- 画布/展示区 -->
+            <div class="workspace-panel canvas-panel">
+                <div class="panel-header">
+                    <span class="panel-title">工作区</span>
+                    <div class="panel-actions">
+                        <button class="small-btn" id="toggle-canvas">画布模式</button>
+                        <button class="small-btn" id="toggle-result">结果模式</button>
+                    </div>
+                </div>
+                <div class="canvas-container" id="canvas-container">
+                    <canvas id="draw-canvas"></canvas>
+                    <div class="canvas-tools">
+                        <button class="canvas-tool" data-tool="pen" title="画笔">
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                        <button class="canvas-tool" data-tool="eraser" title="橡皮擦">
+                            <i class="fa fa-eraser"></i>
+                        </button>
+                        <button class="canvas-tool" data-tool="text" title="文本">
+                            <i class="fa fa-font"></i>
+                        </button>
+                        <button class="canvas-tool" data-tool="formula" title="公式">
+                            <i class="fa fa-superscript"></i>
+                        </button>
+                        <input type="color" id="pen-color" value="#000000" title="颜色">
+                        <input type="range" id="pen-size" min="1" max="20" value="2" title="粗细">
+                        <button class="canvas-tool" id="clear-canvas" title="清空画布">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="result-container" id="result-container" style="display: none;">
+                    <div class="result-content" id="result-content"></div>
+                </div>
+            </div>
+            
+            <!-- 输出区 -->
+            <div class="workspace-panel output-panel">
+                <div class="panel-header">
+                    <span class="panel-title">输出</span>
+                    <div class="panel-actions">
+                        <button class="small-btn" id="copy-output">复制</button>
+                    </div>
+                </div>
+                <div class="output-content" id="output-content"></div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- 底部状态栏 -->
+    <footer class="status-bar">
+        <div class="status-left">
+            <span class="status-item">就绪</span>
+            <span class="status-divider">|</span>
+            <span class="status-item">输入格式: UTF-8</span>
+        </div>
+        <div class="status-right">
+            <span class="status-item" id="history-count">历史记录: 0条</span>
+            <span class="status-divider">|</span>
+            <span class="status-item">v2.0 学习模式</span>
+        </div>
+    </footer>
+    
+    <!-- 历史记录面板 -->
+    <div class="side-panel" id="history-panel">
+        <div class="side-panel-header">
+            <span>历史记录</span>
+            <button class="close-btn" id="close-history">&times;</button>
+        </div>
+        <div class="side-panel-content" id="history-list"></div>
+    </div>
+    
+    <!-- 设置面板 -->
+    <div class="side-panel" id="settings-panel">
+        <div class="side-panel-header">
+            <span>设置</span>
+            <button class="close-btn" id="close-settings">&times;</button>
+        </div>
+        <div class="side-panel-content">
+            <div class="settings-group">
+                <div class="settings-group-title">界面</div>
+                <div class="setting-item">
+                    <span>主题</span>
+                    <select id="theme-select">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <span>字体大小</span>
+                    <select id="font-size">
+                        <option value="small">小</option>
+                        <option value="medium" selected>中</option>
+                        <option value="large">大</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="settings-group">
+                <div class="settings-group-title">记录</div>
+                <div class="setting-item">
+                    <span>详细记录</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="detailed-records">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <span>自动保存</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-save" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="settings-group">
+                <div class="settings-group-title">模式切换</div>
+                <button class="switch-mode-btn" id="switch-to-browse">
+                    切换到浏览模式
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="../js/study/main.js"></script>
+</body>
+</html>
