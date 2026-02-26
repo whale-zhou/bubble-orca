@@ -38,17 +38,25 @@ function initVoiceAssistant() {
     if (!toggle) return;
     
     const savedEnabled = localStorage.getItem('voiceAssistantEnabled') === 'true';
+    const isFirstTime = localStorage.getItem('voiceAssistantFirstTime') !== 'false';
     toggle.checked = savedEnabled;
     
     if (savedEnabled && voiceAssistant.checkSupport()) {
         voiceAssistant.enable().then(success => {
             if (success && statusEl) {
-                statusEl.textContent = '✅ 语音助手已启用';
+                statusEl.textContent = '✅ 语音助手已启用 - 请说"泡泡鲸"唤醒';
                 statusEl.style.color = '#22c55e';
+                
+                if (isFirstTime) {
+                    localStorage.setItem('voiceAssistantFirstTime', 'false');
+                    setTimeout(() => {
+                        voiceAssistant.showWelcome();
+                    }, 1000);
+                }
             }
         });
     } else if (!voiceAssistant.checkSupport() && statusEl) {
-        statusEl.textContent = '⚠️ 浏览器不支持语音识别';
+        statusEl.textContent = '⚠️ 浏览器不支持语音识别，请使用Chrome或Edge';
         statusEl.style.color = '#f59e0b';
     }
     
@@ -57,8 +65,16 @@ function initVoiceAssistant() {
             const success = await voiceAssistant.enable();
             if (success) {
                 if (statusEl) {
-                    statusEl.textContent = '✅ 语音助手已启用';
+                    statusEl.textContent = '✅ 语音助手已启用 - 请说"泡泡鲸"唤醒';
                     statusEl.style.color = '#22c55e';
+                }
+                
+                const isFirstTimeNow = localStorage.getItem('voiceAssistantFirstTime') !== 'false';
+                if (isFirstTimeNow) {
+                    localStorage.setItem('voiceAssistantFirstTime', 'false');
+                    setTimeout(() => {
+                        voiceAssistant.showWelcome();
+                    }, 500);
                 }
             } else {
                 this.checked = false;

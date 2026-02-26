@@ -7,10 +7,15 @@ class VoiceAssistant {
         this.isEnabled = false;
         this.recognition = null;
         this.synthesis = window.speechSynthesis;
-        this.wakeWords = ['泡泡鲸', 'bubble orca', 'bubbleorca', '泡泡鲸密码箱'];
+        this.wakeWords = ['泡泡鲸', 'bubble orca', 'bubbleorca', '泡泡鲸密码箱', '泡泡金', '泡鲸'];
         this.onWakeUp = null;
         this.onCommand = null;
         this.neonBorder = null;
+        this.statusIndicator = null;
+        this.lastTranscript = '';
+        this.wakeWordDetected = false;
+        this.consecutiveErrors = 0;
+        this.maxRetries = 3;
         
         this.init();
     }
@@ -25,18 +30,23 @@ class VoiceAssistant {
         this.recognition.continuous = true;
         this.recognition.interimResults = true;
         this.recognition.lang = 'zh-CN';
+        this.recognition.maxAlternatives = 3;
         
         this.recognition.onresult = (event) => this.handleResult(event);
         this.recognition.onerror = (event) => this.handleError(event);
         this.recognition.onend = () => this.handleEnd();
+        this.recognition.onstart = () => this.handleStart();
         
         this.createNeonBorder();
         
-        console.log('泡泡鲸语音助手已初始化');
-    }
-    
-    checkSupport() {
-        return 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+        if (this.synthesis) {
+            this.synthesis.onvoiceschanged = () => {
+                this.voices = this.synthesis.getVoices();
+            };
+        }
+        
+        console.log('🐋 泡泡鲸语音助手已初始化');
+        console.log('📢 唤醒词:', this.wakeWords.join(', '));
     }
     
     checkSupport() {
@@ -74,7 +84,6 @@ class VoiceAssistant {
                 right: 0;
                 bottom: 0;
                 border: 4px solid transparent;
-                border-radius: 0;
                 animation: neonPulse 2s ease-in-out infinite;
             }
             
@@ -171,7 +180,7 @@ class VoiceAssistant {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                background: rgba(0, 0, 0, 0.9);
+                background: rgba(0, 0, 0, 0.95);
                 border: 2px solid #ff00ff;
                 border-radius: 20px;
                 padding: 30px 50px;
@@ -224,6 +233,42 @@ class VoiceAssistant {
                 text-align: center;
                 min-height: 20px;
             }
+            
+            /* 摄像头预览样式 */
+            #gesture-camera-preview {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 200px;
+                height: 150px;
+                border-radius: 12px;
+                border: 2px solid #ff00ff;
+                box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+                z-index: 9998;
+                display: none;
+                overflow: hidden;
+            }
+            
+            #gesture-camera-preview video {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transform: scaleX(-1);
+            }
+            
+            #gesture-camera-preview .close-btn {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                background: rgba(0, 0, 0, 0.7);
+                border: none;
+                color: white;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 14px;
+            }
         `;
         document.head.appendChild(style);
         
@@ -241,6 +286,11 @@ class VoiceAssistant {
             <div class="transcript"></div>
         `;
         document.body.appendChild(this.statusIndicator);
+    }
+    
+    handleStart() {
+        console.log('🎤 语音识别已启动');
+        this.consecutiveErrors = 0;
     }
     
     async enable() {
@@ -278,9 +328,13 @@ class VoiceAssistant {
         try {
             this.recognition.start();
             this.isListening = true;
-            console.log('语音助手开始监听...');
+            console.log('🎯 语音助手开始监听...');
         } catch (error) {
-            console.error('启动语音识别失败:', error);
+            if (error.name === 'InvalidStateError') {
+                console.log('语音识别已在运行中');
+            } else {
+                console.error('启动语音识别失败:', error);
+            }
         }
     }
     
@@ -290,42 +344,67 @@ class VoiceAssistant {
         try {
             this.recognition.stop();
             this.isListening = false;
-            console.log('语音助手停止监听');
+            console.log('🛑 语音助手停止监听');
         } catch (error) {
             console.error('停止语音识别失败:', error);
         }
     }
     
     handleResult(event) {
-        const last = event.results.length - 1;
-        const transcript = event.results[last][0].transcript.toLowerCase().trim();
+        let finalTranscript = '';
+        let interimTranscript = '';
         
-        console.log('识别结果:', transcript);
-        
-        if (this.statusIndicator) {
-            const transcriptEl = this.statusIndicator.querySelector('.transcript');
-            if (transcriptEl) {
-                transcriptEl.textContent = transcript;
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript;
+            } else {
+                interimTranscript += transcript;
             }
         }
         
+        const currentTranscript = (finalTranscript + interimTranscript).toLowerCase().trim();
+        
+        if (currentTranscript && currentTranscript !== this.lastTranscript) {
+            this.lastTranscript = currentTranscript;
+            console.log('🎤 识别结果:', currentTranscript);
+            
+            if (this.statusIndicator) {
+                const transcriptEl = this.statusIndicator.querySelector('.transcript');
+                if (transcriptEl) {
+                    transcriptEl.textContent = currentTranscript;
+                }
+            }
+        }
+        
+        if (finalTranscript) {
+            this.processTranscript(finalTranscript.toLowerCase().trim());
+        }
+    }
+    
+    processTranscript(transcript) {
+        console.log('📝 处理语音:', transcript);
+        
         for (const wakeWord of this.wakeWords) {
             if (transcript.includes(wakeWord.toLowerCase())) {
-                this.onWakeWordDetected(transcript.replace(wakeWord.toLowerCase(), '').trim());
+                const command = transcript.replace(wakeWord.toLowerCase(), '').trim();
+                this.onWakeWordDetected(command);
                 return;
             }
         }
         
-        if (this.neonBorder && this.neonBorder.classList.contains('active')) {
+        if (this.wakeWordDetected) {
             if (this.onCommand) {
                 this.onCommand(transcript);
             }
+            this.wakeWordDetected = false;
         }
     }
     
     onWakeWordDetected(command) {
-        console.log('唤醒词检测到！命令:', command);
+        console.log('🎉 唤醒词检测到！命令:', command);
         
+        this.wakeWordDetected = true;
         this.showNeonBorder();
         this.speak('我在');
         
@@ -333,11 +412,11 @@ class VoiceAssistant {
             this.onWakeUp(command);
         }
         
-        setTimeout(() => {
-            if (command && this.onCommand) {
+        if (command && this.onCommand) {
+            setTimeout(() => {
                 this.onCommand(command);
-            }
-        }, 1000);
+            }, 500);
+        }
     }
     
     showNeonBorder() {
@@ -346,11 +425,18 @@ class VoiceAssistant {
         }
         if (this.statusIndicator) {
             this.statusIndicator.classList.add('show');
+            const textEl = this.statusIndicator.querySelector('.text');
+            if (textEl) {
+                textEl.textContent = '🐋 泡泡鲸已唤醒';
+            }
         }
         
+        if (this.hideTimeout) {
+            clearTimeout(this.hideTimeout);
+        }
         this.hideTimeout = setTimeout(() => {
             this.hideNeonBorder();
-        }, 10000);
+        }, 15000);
     }
     
     hideNeonBorder() {
@@ -360,6 +446,7 @@ class VoiceAssistant {
         if (this.statusIndicator) {
             this.statusIndicator.classList.remove('show');
         }
+        this.wakeWordDetected = false;
         
         if (this.hideTimeout) {
             clearTimeout(this.hideTimeout);
@@ -368,45 +455,73 @@ class VoiceAssistant {
     }
     
     speak(text) {
-        if (!this.synthesis) return;
+        if (!this.synthesis) {
+            console.warn('语音合成不可用');
+            return;
+        }
         
         this.synthesis.cancel();
         
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'zh-CN';
-        utterance.rate = 1;
-        utterance.pitch = 1;
+        utterance.rate = 1.0;
+        utterance.pitch = 1.1;
         utterance.volume = 1;
         
-        const voices = this.synthesis.getVoices();
-        const chineseVoice = voices.find(voice => voice.lang.includes('zh'));
-        if (chineseVoice) {
-            utterance.voice = chineseVoice;
+        if (this.voices && this.voices.length > 0) {
+            const chineseVoice = this.voices.find(voice => 
+                voice.lang.includes('zh') && voice.name.includes('Female')
+            ) || this.voices.find(voice => voice.lang.includes('zh'));
+            if (chineseVoice) {
+                utterance.voice = chineseVoice;
+            }
         }
         
         this.synthesis.speak(utterance);
+        console.log('🔊 语音反馈:', text);
     }
     
     handleError(event) {
-        console.error('语音识别错误:', event.error);
+        console.error('❌ 语音识别错误:', event.error);
+        
+        this.consecutiveErrors++;
         
         if (event.error === 'no-speech') {
             return;
         }
         
+        if (event.error === 'aborted') {
+            return;
+        }
+        
         if (event.error === 'not-allowed') {
-            this.disable();
+            this.isEnabled = false;
+            localStorage.setItem('voiceAssistantEnabled', 'false');
             alert('麦克风权限被拒绝，语音助手已关闭');
+            return;
+        }
+        
+        if (event.error === 'network') {
+            console.warn('网络错误，尝试重新连接...');
+        }
+        
+        if (this.consecutiveErrors >= this.maxRetries) {
+            console.error('连续错误次数过多，停止监听');
+            this.isEnabled = false;
         }
     }
     
     handleEnd() {
-        if (this.isEnabled && this.isListening) {
+        console.log('🔄 语音识别会话结束');
+        
+        if (this.isEnabled) {
             setTimeout(() => {
-                try {
-                    this.recognition.start();
-                } catch (error) {
-                    console.error('重启语音识别失败:', error);
+                if (this.isEnabled && !this.isListening) {
+                    try {
+                        this.recognition.start();
+                    } catch (error) {
+                        console.error('重启语音识别失败:', error);
+                    }
                 }
             }, 100);
         }
@@ -426,6 +541,15 @@ class VoiceAssistant {
             enabled: this.isEnabled,
             listening: this.isListening
         };
+    }
+    
+    showWelcome() {
+        this.showNeonBorder();
+        this.speak('泡泡鲸语音助手已启动，请说泡泡鲸唤醒我');
+        
+        setTimeout(() => {
+            this.hideNeonBorder();
+        }, 5000);
     }
 }
 
