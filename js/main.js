@@ -13,6 +13,7 @@ import { initHexinchun } from './functions/hexinchun.js';
 import { updateButtonStyles } from './utils.js';
 import { showSHA256Animation } from './functions/sha256Animation.js';
 import voiceAssistant from './functions/voiceAssistant.js';
+import gestureController from './functions/gestureController.js';
 
 // 将 showSHA256Animation 暴露到全局
 window.showSHA256Animation = showSHA256Animation;
@@ -98,6 +99,53 @@ function initVoiceAssistant() {
     });
 }
 
+// 初始化手势控制设置
+async function initGestureControl() {
+    const toggle = document.getElementById('toggle-gesture-control');
+    const statusEl = document.getElementById('gesture-control-status');
+    
+    if (!toggle) return;
+    
+    await gestureController.init();
+    gestureController.setVoiceAssistant(voiceAssistant);
+    
+    const savedEnabled = localStorage.getItem('gestureControlEnabled') === 'true';
+    toggle.checked = savedEnabled;
+    
+    if (savedEnabled) {
+        gestureController.enable().then(success => {
+            if (success && statusEl) {
+                statusEl.textContent = '✅ 手势控制已启用';
+                statusEl.style.color = '#22c55e';
+            }
+        });
+    }
+    
+    toggle.addEventListener('change', async function() {
+        if (this.checked) {
+            const success = await gestureController.enable();
+            if (success) {
+                if (statusEl) {
+                    statusEl.textContent = '✅ 手势控制已启用';
+                    statusEl.style.color = '#22c55e';
+                }
+            } else {
+                this.checked = false;
+                if (statusEl) {
+                    statusEl.textContent = '❌ 需要摄像头权限';
+                    statusEl.style.color = '#ef4444';
+                }
+            }
+        } else {
+            gestureController.disable();
+            if (statusEl) {
+                statusEl.textContent = '手势控制已关闭';
+                statusEl.style.color = '#9ca3af';
+            }
+        }
+    });
+}
+
 // 处理语音命令
 function handleVoiceCommand(command) {
     const cmd = command.toLowerCase();
@@ -162,6 +210,9 @@ function initApp() {
     
     // 初始化语音助手
     initVoiceAssistant();
+    
+    // 初始化手势控制
+    initGestureControl();
     
     // 初始化其他功能
     initSHA256();
