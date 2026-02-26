@@ -51,6 +51,12 @@ class GestureController {
         this.trailPoints = [];
         this.maxTrailPoints = 30;
         
+        this.lastPosition = { x: 0, y: 0 };
+        this.velocityThreshold = 0.002;
+        this.isStationary = false;
+        this.stationaryTimer = null;
+        this.stationaryDelay = 300;
+        
         this.styles = null;
     }
     
@@ -562,16 +568,48 @@ class GestureController {
     
     updateFingerTrail(landmarks) {
         const indexTip = landmarks[8];
-        const x = indexTip.x * window.innerWidth;
-        const y = indexTip.y * window.innerHeight;
+        const x = indexTip.x;
+        const y = indexTip.y;
         
-        this.trailPoints.push({ x, y, time: Date.now() });
+        const dx = x - this.lastPosition.x;
+        const dy = y - this.lastPosition.y;
+        const velocity = Math.sqrt(dx * dx + dy * dy);
+        
+        if (velocity < this.velocityThreshold) {
+            if (!this.stationaryTimer) {
+                this.stationaryTimer = setTimeout(() => {
+                    this.isStationary = true;
+                    this.clearTrail();
+                }, this.stationaryDelay);
+            }
+            return;
+        }
+        
+        this.isStationary = false;
+        if (this.stationaryTimer) {
+            clearTimeout(this.stationaryTimer);
+            this.stationaryTimer = null;
+        }
+        
+        this.lastPosition = { x, y };
+        
+        const screenX = x * window.innerWidth;
+        const screenY = y * window.innerHeight;
+        
+        this.trailPoints.push({ x: screenX, y: screenY, time: Date.now() });
         
         if (this.trailPoints.length > this.maxTrailPoints) {
             this.trailPoints.shift();
         }
         
         this.drawTrail();
+    }
+    
+    clearTrail() {
+        this.trailPoints = [];
+        if (this.trailCtx) {
+            this.trailCtx.clearRect(0, 0, this.trailCanvas.width, this.trailCanvas.height);
+        }
     }
     
     drawTrail() {
@@ -663,6 +701,11 @@ class GestureController {
     }
     
     analyzeGesture(landmarks) {
+        if (this.isStationary) {
+            this.hideGestureIndicator();
+            return;
+        }
+        
         const gesture = this.detectGesture(landmarks);
         const now = Date.now();
         
@@ -798,6 +841,7 @@ class GestureController {
     
     detectSwipe(landmarks) {
         if (!this.gestureEnabled.swipe) return;
+        if (this.isStationary) return;
         
         const wrist = landmarks[0];
         const indexTip = landmarks[8];
@@ -942,7 +986,7 @@ class GestureController {
     executeSwipe(direction) {
         console.log('👆 滑动:', direction);
         
-        const scrollAmount = 300;
+        const scrollAmount = 100;
         
         if (direction === 'up') {
             window.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
