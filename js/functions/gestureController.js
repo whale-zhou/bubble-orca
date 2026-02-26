@@ -55,8 +55,8 @@ class GestureController {
                 position: fixed;
                 bottom: 20px;
                 right: 20px;
-                width: 200px;
-                height: 150px;
+                min-width: 150px;
+                min-height: 100px;
                 border-radius: 12px;
                 overflow: hidden;
                 z-index: 9998;
@@ -64,6 +64,7 @@ class GestureController {
                 box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
                 border: 2px solid rgba(100, 200, 255, 0.5);
                 background: #000;
+                resize: both;
             }
             
             #gesture-preview-container.show {
@@ -92,6 +93,10 @@ class GestureController {
                 opacity: 0;
             }
             
+            #gesture-preview-container.resizing {
+                user-select: none;
+            }
+            
             #gesture-preview-video {
                 width: 100%;
                 height: 100%;
@@ -107,6 +112,23 @@ class GestureController {
                 height: 100%;
                 transform: scaleX(-1);
                 pointer-events: none;
+            }
+            
+            /* 调整大小手柄 */
+            #gesture-resize-handle {
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                width: 20px;
+                height: 20px;
+                cursor: se-resize;
+                z-index: 10;
+                background: linear-gradient(135deg, transparent 50%, rgba(100, 200, 255, 0.5) 50%);
+                border-radius: 0 0 12px 0;
+            }
+            
+            #gesture-resize-handle:hover {
+                background: linear-gradient(135deg, transparent 50%, rgba(100, 200, 255, 0.8) 50%);
             }
             
             /* 预览控制按钮 */
@@ -239,6 +261,8 @@ class GestureController {
     createPreviewContainer() {
         this.previewContainer = document.createElement('div');
         this.previewContainer.id = 'gesture-preview-container';
+        this.previewContainer.style.width = '200px';
+        this.previewContainer.style.height = '150px';
         this.previewContainer.innerHTML = `
             <div id="gesture-preview-drag-handle"></div>
             <div id="gesture-preview-controls">
@@ -251,6 +275,7 @@ class GestureController {
             </div>
             <video id="gesture-preview-video" autoplay playsinline></video>
             <canvas id="gesture-preview-canvas"></canvas>
+            <div id="gesture-resize-handle"></div>
             <div id="gesture-status-badge">🖐️ 检测中...</div>
         `;
         document.body.appendChild(this.previewContainer);
@@ -260,6 +285,7 @@ class GestureController {
         this.ctx = this.canvas.getContext('2d');
         
         this.setupDraggable();
+        this.setupResizable();
         this.setupControls();
     }
     
@@ -287,8 +313,8 @@ class GestureController {
             let newLeft = startLeft + deltaX;
             let newTop = startTop + deltaY;
             
-            newLeft = Math.max(0, Math.min(window.innerWidth - 200, newLeft));
-            newTop = Math.max(0, Math.min(window.innerHeight - 150, newTop));
+            newLeft = Math.max(0, Math.min(window.innerWidth - this.previewContainer.offsetWidth, newLeft));
+            newTop = Math.max(0, Math.min(window.innerHeight - this.previewContainer.offsetHeight, newTop));
             
             this.previewContainer.style.left = newLeft + 'px';
             this.previewContainer.style.top = newTop + 'px';
@@ -299,6 +325,46 @@ class GestureController {
         document.addEventListener('mouseup', () => {
             isDragging = false;
             this.previewContainer.classList.remove('dragging');
+        });
+    }
+    
+    setupResizable() {
+        const resizeHandle = this.previewContainer.querySelector('#gesture-resize-handle');
+        let isResizing = false;
+        let startX, startY, startWidth, startHeight;
+        
+        resizeHandle.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            isResizing = true;
+            this.previewContainer.classList.add('resizing');
+            startX = e.clientX;
+            startY = e.clientY;
+            startWidth = this.previewContainer.offsetWidth;
+            startHeight = this.previewContainer.offsetHeight;
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            let newWidth = startWidth + deltaX;
+            let newHeight = startHeight + deltaY;
+            
+            newWidth = Math.max(150, Math.min(500, newWidth));
+            newHeight = Math.max(100, Math.min(400, newHeight));
+            
+            this.previewContainer.style.width = newWidth + 'px';
+            this.previewContainer.style.height = newHeight + 'px';
+            
+            this.canvas.width = newWidth;
+            this.canvas.height = newHeight;
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isResizing = false;
+            this.previewContainer.classList.remove('resizing');
         });
     }
     
