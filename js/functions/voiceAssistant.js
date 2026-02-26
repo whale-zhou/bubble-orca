@@ -45,7 +45,17 @@ class VoiceAssistant {
         this.recognition.continuous = true;
         this.recognition.interimResults = true;
         this.recognition.lang = 'zh-CN';
-        this.recognition.maxAlternatives = 3;
+        this.recognition.maxAlternatives = 5;
+        
+        if (this.recognition.webkitSpeechRecognition) {
+            this.recognition.webkitSpeechRecognition = true;
+        }
+        
+        try {
+            this.recognition.grammars = this.createGrammar();
+        } catch (e) {
+            console.log('语法列表不支持');
+        }
         
         this.recognition.onresult = (event) => this.handleResult(event);
         this.recognition.onerror = (event) => this.handleError(event);
@@ -62,6 +72,13 @@ class VoiceAssistant {
         
         console.log('🐋 泡泡鲸语音助手已初始化');
         console.log('📢 唤醒词:', this.wakeWords.join(', '));
+    }
+    
+    createGrammar() {
+        const grammar = '#JSGF V1.0; grammar wakeWords; public <wakeWord> = 泡泡鲸 | 泡泡金 | 泡泡精 | bubble orca | bubble;';
+        const speechRecognitionList = new (window.SpeechGrammarList || window.webkitSpeechGrammarList)();
+        speechRecognitionList.addFromString(grammar, 1);
+        return speechRecognitionList;
     }
     
     checkSupport() {
@@ -441,25 +458,51 @@ class VoiceAssistant {
         
         if (finalTranscript) {
             this.processTranscript(finalTranscript.toLowerCase().trim());
+            
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal && event.results[i].length > 1) {
+                    for (let j = 1; j < event.results[i].length; j++) {
+                        const altTranscript = event.results[i][j].transcript.toLowerCase().trim();
+                        if (altTranscript && altTranscript !== finalTranscript.toLowerCase().trim()) {
+                            console.log('🎤 备选结果:', altTranscript);
+                            this.processTranscript(altTranscript);
+                        }
+                    }
+                }
+            }
         }
     }
     
     processTranscript(transcript) {
         console.log('📝 处理语音:', transcript);
         
+        const cleanTranscript = transcript.replace(/\s+/g, '').toLowerCase();
+        
         for (const wakeWord of this.wakeWords) {
-            const wakeWordLower = wakeWord.toLowerCase();
-            if (transcript.includes(wakeWordLower)) {
-                const command = transcript.replace(wakeWordLower, '').trim();
+            const wakeWordClean = wakeWord.replace(/\s+/g, '').toLowerCase();
+            if (cleanTranscript.includes(wakeWordClean)) {
+                const command = transcript.replace(new RegExp(wakeWord, 'gi'), '').trim();
                 this.onWakeWordDetected(command);
                 return;
             }
         }
         
+        const segments = cleanTranscript.split(/[，。！？、,.!?]/);
+        for (const segment of segments) {
+            for (const wakeWord of this.wakeWords) {
+                const wakeWordClean = wakeWord.replace(/\s+/g, '').toLowerCase();
+                if (segment.includes(wakeWordClean)) {
+                    const command = segment.replace(wakeWordClean, '').trim();
+                    this.onWakeWordDetected(command);
+                    return;
+                }
+            }
+        }
+        
         for (const wakeWord of this.wakeWords) {
-            if (this.fuzzyMatch(transcript, wakeWord.toLowerCase(), this.wakeWordThreshold)) {
+            if (this.fuzzyMatch(cleanTranscript, wakeWord.replace(/\s+/g, '').toLowerCase(), this.wakeWordThreshold)) {
                 console.log('🎯 模糊匹配成功:', wakeWord);
-                const command = transcript.replace(wakeWord.toLowerCase(), '').trim();
+                const command = cleanTranscript.replace(wakeWord.replace(/\s+/g, '').toLowerCase(), '').trim();
                 this.onWakeWordDetected(command);
                 return;
             }
