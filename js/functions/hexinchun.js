@@ -1,8 +1,12 @@
 // 贺新春红包功能模块
 
+// 安全警告：开发者验证哈希值
+// 注意：前端存储敏感信息是不安全的，建议在生产环境中使用后端验证
+// 此处使用环境变量或默认占位符
+const DEV_HASH = window.DEV_HASH || '';
+
 // 核心配置
 const CONFIG = {
-    devHash: '2a7d2c2b89d9f9a8f7d6c5b4a3s2d1f0g9h8j7k6l5k4j3h2g1f0d9s8a7d6s5',
     version: '3.0.1',
     default: {
         password: '',
@@ -30,6 +34,14 @@ function generateRedeemCode() {
     }
     
     return code.split('').sort(() => Math.random() - 0.5).join('');
+}
+
+// HTML转义函数，防止XSS攻击
+function escapeHtml(text) {
+    if (typeof text !== 'string') return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Base64 编码函数（支持中文）
@@ -260,19 +272,29 @@ function initHexinchun() {
                     ? '<span style="color: #ef4444; font-size: 11px;">已使用</span>' 
                     : '<span style="color: #22c55e; font-size: 11px;">未使用</span>';
             }
+            const escapedValue = escapeHtml(item.value);
+            const displayValue = escapedValue.length > 30 ? escapedValue.substring(0, 30) + '...' : escapedValue;
+            const escapedTime = escapeHtml(item.time);
             return `
                 <div class="history-item" data-index="${index}" data-history-key="${historyKey}" style="display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 5px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                    <div class="history-item-value" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #e5e7eb; font-size: 13px; cursor: pointer;" onclick="document.getElementById('${inputId}').value='${item.value}'">
-                        ${item.value.length > 30 ? item.value.substring(0, 30) + '...' : item.value}
+                    <div class="history-item-value" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #e5e7eb; font-size: 13px; cursor: pointer;" data-value="${escapedValue}">
+                        ${displayValue}
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; margin-left: 10px;">
                         ${statusBadge}
-                        <span style="color: #9ca3af; font-size: 11px;">${item.time}</span>
+                        <span style="color: #9ca3af; font-size: 11px;">${escapedTime}</span>
                         <button class="delete-history-item" data-index="${index}" data-history-key="${historyKey}" style="padding: 2px 6px; border: none; border-radius: 4px; background: rgba(239, 68, 68, 0.2); color: #ef4444; font-size: 11px; cursor: pointer;">×</button>
                     </div>
                 </div>
             `;
         }).join('');
+        
+        historyList.querySelectorAll('.history-item-value').forEach(el => {
+            el.addEventListener('click', () => {
+                const input = document.getElementById(inputId);
+                if (input) input.value = el.dataset.value;
+            });
+        });
     }
     
     function deleteHistoryItem(historyKey, index) {
@@ -662,7 +684,7 @@ function initHexinchun() {
     if (devHashBtn && devHashInput) {
         devHashBtn.addEventListener('click', () => {
             const inputHash = devHashInput.value.trim();
-            if (inputHash === CONFIG.devHash) {
+            if (inputHash === DEV_HASH && DEV_HASH) {
                 if (devHashStep) devHashStep.style.display = 'none';
                 if (devConfigStep) devConfigStep.style.display = 'block';
             } else {
