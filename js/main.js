@@ -12,6 +12,7 @@ import { initAlgorithmSwitch } from './functions/algorithmSwitch.js';
 import { initHexinchun } from './functions/hexinchun.js';
 import { updateButtonStyles } from './utils.js';
 import { showSHA256Animation } from './functions/sha256Animation.js';
+import voiceAssistant from './functions/voiceAssistant.js';
 
 // 将 showSHA256Animation 暴露到全局
 window.showSHA256Animation = showSHA256Animation;
@@ -27,6 +28,94 @@ function showError(message, error) {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+}
+
+// 初始化语音助手设置
+function initVoiceAssistant() {
+    const toggle = document.getElementById('toggle-voice-assistant');
+    const statusEl = document.getElementById('voice-assistant-status');
+    
+    if (!toggle) return;
+    
+    const savedEnabled = localStorage.getItem('voiceAssistantEnabled') === 'true';
+    toggle.checked = savedEnabled;
+    
+    if (savedEnabled && voiceAssistant.checkSupport()) {
+        voiceAssistant.enable().then(success => {
+            if (success && statusEl) {
+                statusEl.textContent = '✅ 语音助手已启用';
+                statusEl.style.color = '#22c55e';
+            }
+        });
+    } else if (!voiceAssistant.checkSupport() && statusEl) {
+        statusEl.textContent = '⚠️ 浏览器不支持语音识别';
+        statusEl.style.color = '#f59e0b';
+    }
+    
+    toggle.addEventListener('change', async function() {
+        if (this.checked) {
+            const success = await voiceAssistant.enable();
+            if (success) {
+                if (statusEl) {
+                    statusEl.textContent = '✅ 语音助手已启用';
+                    statusEl.style.color = '#22c55e';
+                }
+            } else {
+                this.checked = false;
+                if (statusEl) {
+                    statusEl.textContent = '❌ 需要麦克风权限';
+                    statusEl.style.color = '#ef4444';
+                }
+            }
+        } else {
+            voiceAssistant.disable();
+            if (statusEl) {
+                statusEl.textContent = '语音助手已关闭';
+                statusEl.style.color = '#9ca3af';
+            }
+        }
+    });
+    
+    voiceAssistant.setOnCommand((command) => {
+        console.log('收到语音命令:', command);
+        handleVoiceCommand(command);
+    });
+}
+
+// 处理语音命令
+function handleVoiceCommand(command) {
+    const cmd = command.toLowerCase();
+    
+    if (cmd.includes('截图') || cmd.includes('截屏')) {
+        document.body.style.border = '5px solid #ff00ff';
+        setTimeout(() => document.body.style.border = '', 500);
+        voiceAssistant.speak('已截图');
+    } else if (cmd.includes('打开设置') || cmd.includes('设置')) {
+        const panel = document.getElementById('settings-panel');
+        if (panel) {
+            panel.classList.add('show');
+            voiceAssistant.speak('设置已打开');
+        }
+    } else if (cmd.includes('关闭')) {
+        const panel = document.getElementById('settings-panel');
+        if (panel) {
+            panel.classList.remove('show');
+            voiceAssistant.speak('已关闭');
+        }
+        voiceAssistant.hideNeonBorder();
+    } else if (cmd.includes('滚动') && (cmd.includes('上') || cmd.includes('顶部'))) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        voiceAssistant.speak('已滚动到顶部');
+    } else if (cmd.includes('滚动') && (cmd.includes('下') || cmd.includes('底部'))) {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        voiceAssistant.speak('已滚动到底部');
+    } else if (cmd.includes('计算') || cmd.includes('开始')) {
+        const calcBtn = document.querySelector('[onclick*="calculate"], #calculate-btn, .calculate-btn');
+        if (calcBtn) {
+            calcBtn.click();
+            voiceAssistant.speak('开始计算');
+        }
+    }
 }
 
 // 初始化应用
@@ -54,6 +143,9 @@ function initApp() {
     
     // 初始化贺新春红包功能
     initHexinchun();
+    
+    // 初始化语音助手
+    initVoiceAssistant();
     
     // 初始化其他功能
     initSHA256();
