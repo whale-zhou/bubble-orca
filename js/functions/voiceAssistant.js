@@ -623,52 +623,6 @@ class VoiceAssistant {
         
         return matchCount >= Math.ceil(patternChars.length * 0.7);
     }
-        
-        // 拼音相似匹配 - 处理发音相近的情况
-        const pinyinMap = {
-            '鲸': ['金', '精', '青', '亲', '镜', '近', '庆', '京', '经', '清'],
-            '金': ['鲸', '精', '青', '亲', '镜', '近', '庆', '京', '经', '清'],
-            '泡': ['跑', '抛', '炮', '袍'],
-            'a': ['e', 'o', 'u'],
-            'e': ['a', 'i'],
-            'i': ['e', 'y'],
-            'o': ['a', 'u'],
-            'u': ['o', 'a'],
-            'b': ['p', 'v'],
-            'p': ['b'],
-            'c': ['k', 's'],
-            'k': ['c'],
-            's': ['c', 'z'],
-            'z': ['s'],
-            'l': ['r'],
-            'r': ['l'],
-            'm': ['n'],
-            'n': ['m']
-        };
-        
-        // 检查拼音相似度
-        let pinyinMatchCount = 0;
-        patternIndex = 0;
-        
-        for (let i = 0; i < textLower.length && patternIndex < patternLower.length; i++) {
-            const textChar = textLower[i];
-            const patternChar = patternLower[patternIndex];
-            
-            if (textChar === patternChar) {
-                pinyinMatchCount++;
-                patternIndex++;
-            } else if (pinyinMap[textChar] && pinyinMap[textChar].includes(patternChar)) {
-                pinyinMatchCount += 0.8;
-                patternIndex++;
-            } else if (pinyinMap[patternChar] && pinyinMap[patternChar].includes(textChar)) {
-                pinyinMatchCount += 0.8;
-                patternIndex++;
-            }
-        }
-        
-        const pinyinSimilarity = pinyinMatchCount / patternLower.length;
-        return pinyinSimilarity >= threshold;
-    }
     
     onWakeWordDetected(command) {
         console.log('🎉 唤醒词检测到！命令:', command);
