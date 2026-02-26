@@ -33,7 +33,14 @@ class GestureController {
         
         this.handsDetected = 0;
         this.lastClapTime = 0;
-        this.clapCooldown = 800;
+        this.clapCooldown = 1000;
+        
+        this.lastFrameTime = 0;
+        this.frameInterval = 50;
+        
+        this.handCountHistory = [];
+        this.handCountHistoryMax = 5;
+        this.stableHandCount = 0;
         
         this.onGesture = null;
         this.voiceAssistant = null;
@@ -518,10 +525,19 @@ class GestureController {
     
     startDetection() {
         const detect = async () => {
-            if (!this.isRunning || !this.video.readyState >= 2) {
-                if (this.isRunning) {
-                    requestAnimationFrame(detect);
-                }
+            if (!this.isRunning || !this.isEnabled) {
+                return;
+            }
+            
+            const now = Date.now();
+            if (now - this.lastFrameTime < this.frameInterval) {
+                requestAnimationFrame(detect);
+                return;
+            }
+            this.lastFrameTime = now;
+            
+            if (!this.video || this.video.readyState < 2) {
+                requestAnimationFrame(detect);
                 return;
             }
             
@@ -538,27 +554,47 @@ class GestureController {
     }
     
     onResults(results) {
+        if (!this.isEnabled || !this.isRunning) {
+            return;
+        }
+        
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         const now = Date.now();
         
         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-            this.handsDetected = results.multiHandLandmarks.length;
+            const detectedCount = results.multiHandLandmarks.length;
+            
+            this.handCountHistory.push(detectedCount);
+            if (this.handCountHistory.length > this.handCountHistoryMax) {
+                this.handCountHistory.shift();
+            }
+            
+            if (this.handCountHistory.length >= 3) {
+                const counts = this.handCountHistory.filter(c => c === this.handCountHistory[0]).length;
+                if (counts >= 3) {
+                    this.stableHandCount = this.handCountHistory[0];
+                }
+            }
+            
+            this.handsDetected = this.stableHandCount;
             
             for (const landmarks of results.multiHandLandmarks) {
                 this.drawHand(landmarks);
                 this.updateFingerTrail(landmarks);
             }
             
-            if (results.multiHandLandmarks.length === 1) {
+            if (this.stableHandCount === 1) {
                 this.analyzeGesture(results.multiHandLandmarks[0]);
-            } else if (results.multiHandLandmarks.length === 2) {
+            } else if (this.stableHandCount === 2) {
                 this.detectClap(results.multiHandLandmarks, now);
                 this.analyzeGesture(results.multiHandLandmarks[0]);
             }
             
             this.updateStatus(`🖐️ 检测到 ${this.handsDetected} 只手`);
         } else {
+            this.handCountHistory = [];
+            this.stableHandCount = 0;
             this.handsDetected = 0;
             this.updateStatus('🖐️ 检测中...');
             this.hideGestureIndicator();
@@ -849,8 +885,6 @@ class GestureController {
         
         const now = Date.now();
         
-        if (now - this.lastSwipeTime < this.swipeCooldown) return;
-        
         const indexExtended = this.isFingerExtended(landmarks, 'index');
         const middleExtended = this.isFingerExtended(landmarks, 'middle');
         const ringExtended = this.isFingerExtended(landmarks, 'ring');
@@ -886,13 +920,14 @@ class GestureController {
             this.swipeHistory.shift();
         }
         
-        if (this.swipeHistory.length >= 3) {
+        if (this.swipeHistory.length >= 4 && now - this.lastSwipeTime >= this.swipeCooldown) {
             const first = this.swipeHistory[0];
             const last = this.swipeHistory[this.swipeHistory.length - 1];
             const deltaY = last.y - first.y;
             const deltaTime = last.time - first.time;
+            const velocity = Math.abs(deltaY) / deltaTime;
             
-            if (deltaTime < 500 && Math.abs(deltaY) > 0.05) {
+            if (deltaTime < 600 && Math.abs(deltaY) > 0.08 && velocity > 0.0001) {
                 if (deltaY > 0) {
                     this.executeSwipe('down');
                 } else {
@@ -1108,6 +1143,21 @@ class GestureController {
         
         this.previewContainer.classList.remove('show');
         this.hideGestureIndicator();
+        this.clearTrail();
+        
+        this.handCountHistory = [];
+        this.stableHandCount = 0;
+        this.handsDetected = 0;
+        this.swipeHistory = [];
+        this.trailPoints = [];
+        this.lastGesture = null;
+        this.isStationary = false;
+        
+        if (this.stationaryTimer) {
+            clearTimeout(this.stationaryTimer);
+            this.stationaryTimer = null;
+        }
+        
         localStorage.setItem('gestureControlEnabled', 'false');
         
         console.log('🛑 手势控制已关闭');
