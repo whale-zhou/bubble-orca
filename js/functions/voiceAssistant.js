@@ -10,8 +10,17 @@ class VoiceAssistant {
         this.wakeWords = [
             '泡泡鲸', '泡泡金', '泡泡精', '泡泡青', '泡泡亲', '泡泡镜', '泡泡近', '泡泡庆',
             '泡鲸', '泡金', '泡精', '泡青',
-            'bubble orca', 'bubble', 'orca', 'baba orca', 'babo orca', 'babble orca',
-            'bubul orca', 'bubor orca', 'bubble auca', 'bubble oca'
+            'bubble orca', 'bubble', 'orca',
+            'baba orca', 'babo orca', 'babble orca', 'babul orca',
+            'bubul orca', 'bubor orca', 'bubul auca', 'bubor auca',
+            'bubble auca', 'bubble oca', 'bubble aka', 'bubble oka',
+            'babo auca', 'baba auca', 'baba oca', 'babo oca',
+            'buble orca', 'bubl orca', 'bubel orca',
+            'bouble orca', 'bobble orca', 'bobl orca',
+            'baobao orca', 'baobao', 'bao bao',
+            'bubber orca', 'bubber', 'buba orca',
+            'papa orca', 'papa', 'puple orca',
+            'bubble work', 'bubble walk', 'bubble water'
         ];
         this.wakeWordThreshold = 0.5;
         this.onWakeUp = null;
