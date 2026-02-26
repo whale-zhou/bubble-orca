@@ -2,8 +2,8 @@ class SHA256Animator {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
-        this.width = canvas.width;
-        this.height = canvas.height;
+        this.width = canvas.clientWidth || 900;
+        this.height = canvas.clientHeight || 700;
         this.animationId = null;
         
         this.phaseNames = [
@@ -790,8 +790,8 @@ function showSHA256Animation(message) {
                         </div>
                     </div>
                 </div>
-                <div class="bg-gray-800 rounded-lg p-2">
-                    <canvas id="sha256-animation-canvas" width="900" height="700"></canvas>
+                <div class="bg-gray-800 rounded-lg p-2" style="overflow-x: auto;">
+                    <canvas id="sha256-animation-canvas" style="width: 100%; max-width: 900px; height: auto; min-height: 500px;"></canvas>
                 </div>
                 <div class="mt-4 text-gray-400 text-sm">
                     <p><strong>SHA-256 特性：</strong></p>

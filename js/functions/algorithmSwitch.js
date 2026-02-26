@@ -131,8 +131,16 @@ function initWorker() {
             
             const resultText = document.getElementById('shor-result-text');
             if (resultText) {
-                resultText.textContent = `计算出错: ${e.message}`;
+                resultText.textContent = `计算出错: ${e.message || '未知错误，请重试'}`;
+                resultText.style.color = '#ef4444';
             }
+            
+            // 显示错误提示
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            toast.textContent = '计算过程中发生错误，请重试';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         };
         
         return worker;

@@ -504,7 +504,7 @@ body {
     position: fixed;
     top: 0;
     right: 0;
-    width: 320px;
+    width: min(320px, 90vw);
     height: 100vh;
     background: linear-gradient(
         180deg,
@@ -949,4 +949,63 @@ body {
 #spring-btn.clicked {
     animation: none;
     box-shadow: 0 0 5px rgba(220, 38, 38, 0.3);
+}
+
+/* ========================================
+   触摸设备适配
+   ======================================== */
+@media (hover: none) {
+    .glass-card:hover,
+    .glass-feature-card:hover {
+        transform: none;
+    }
+    
+    .glass-card:active,
+    .glass-feature-card:active {
+        transform: scale(0.98);
+    }
+    
+    .glass-btn:hover {
+        transform: none;
+    }
+    
+    .glass-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .glass-card::before,
+    .glass-feature-card::before {
+        display: none;
+    }
+}
+
+/* ========================================
+   小屏幕适配
+   ======================================== */
+@media (max-width: 640px) {
+    .settings-header h3 {
+        font-size: 16px;
+    }
+    
+    .setting-toggle-label {
+        font-size: 13px;
+    }
+    
+    .setting-toggle-desc {
+        font-size: 10px;
+    }
+    
+    .toggle-switch {
+        width: 40px;
+        height: 22px;
+    }
+    
+    .toggle-slider:before {
+        height: 16px;
+        width: 16px;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(18px);
+    }
 }

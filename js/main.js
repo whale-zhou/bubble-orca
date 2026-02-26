@@ -16,6 +16,19 @@ import { showSHA256Animation } from './functions/sha256Animation.js';
 // 将 showSHA256Animation 暴露到全局
 window.showSHA256Animation = showSHA256Animation;
 
+// 通用错误提示函数
+function showError(message, error) {
+    console.error('Error:', error);
+    const toast = document.createElement('div');
+    toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 // 初始化应用
 function initApp() {
     // 初始化设置功能（包含粒子初始化）
@@ -121,6 +134,8 @@ function initSHA256() {
                     if (viewAnimationBtn) {
                         viewAnimationBtn.style.display = 'inline-block';
                     }
+                }).catch(error => {
+                    showError('SHA-256加密失败，请重试', error);
                 });
             } else {
                 alert('请输入要加密的文本');
@@ -212,6 +227,8 @@ function initHashSalt() {
                     resultSalt.textContent = salt;
                     resultAlgorithm.textContent = algorithm.toUpperCase();
                     resultHash.textContent = hash + ` (耗时: ${elapsedTime}ms)`;
+                }).catch(error => {
+                    showError('哈希生成失败，请重试', error);
                 });
             } else {
                 alert('请输入要加密的文本');

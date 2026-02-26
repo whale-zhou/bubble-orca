@@ -93,20 +93,20 @@
     </div>
 
     <!-- 贺新春按钮 -->
-    <button id="spring-btn" class="fixed top-4 right-20 z-50 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-lg hidden">
+    <button id="spring-btn" class="fixed top-4 right-20 z-50 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-lg hidden" aria-label="贺新春活动">
         贺新春
     </button>
     
     <!-- 设置按钮 -->
-    <button id="settings-btn" class="glass-btn fixed top-4 right-4 z-50 w-10 h-10 rounded-full flex items-center justify-center">
+    <button id="settings-btn" class="glass-btn fixed top-4 right-4 z-50 w-10 h-10 rounded-full flex items-center justify-center" aria-label="打开设置" title="设置">
         <i class="fa fa-cog text-white" aria-hidden="true"></i>
     </button>
     
     <!-- 设置面板 -->
-    <div id="settings-panel">
+    <div id="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <div class="settings-header">
-            <h3>⚙️ 设置</h3>
-            <button class="settings-close-btn" id="settings-close-btn">×</button>
+            <h3 id="settings-title">⚙️ 设置</h3>
+            <button class="settings-close-btn" id="settings-close-btn" aria-label="关闭设置">×</button>
         </div>
         <div class="settings-content">
             <!-- 背景设置 -->
@@ -223,13 +223,13 @@
     </div>
     
     <!-- 贺新春弹窗 -->
-    <div id="spring-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1000; justify-content: center; align-items: center;">
+    <div id="spring-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1000; justify-content: center; align-items: center;" role="dialog" aria-modal="true" aria-labelledby="spring-modal-title">
         <div style="width: 90%; max-width: 400px; background: linear-gradient(135deg, #1a0a0a 0%, #2d1810 100%); border-radius: 20px; padding: 30px; box-shadow: 0 0 50px rgba(220, 38, 38, 0.5); text-align: center; position: relative; border: 2px solid rgba(255, 215, 0, 0.3);">
-            <h3 style="color: #ffd700; margin-bottom: 20px; font-size: 20px;">🧧 泡泡鲸祝您2026新年快乐，马到成功 🧧</h3>
+            <h3 id="spring-modal-title" style="color: #ffd700; margin-bottom: 20px; font-size: 20px;">🧧 泡泡鲸祝您2026新年快乐，马到成功 🧧</h3>
             <p style="color: #f8d7da; margin-bottom: 30px; font-size: 16px;">点击下方按钮，输入兑换码解锁泡泡鲸的专属过年红包呀</p>
             
             <!-- 泡泡鲸过年主按钮 -->
-            <button id="bubble-newyear-btn" style="margin: 20px 0; padding: 15px 60px; border: none; border-radius: 50px; background: linear-gradient(135deg, #dc2626 0%, #f59e0b 100%); color: white; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px rgba(220, 38, 38, 0.6); display: inline-flex; align-items: center; gap: 10px;">
+            <button id="bubble-newyear-btn" style="margin: 20px 0; padding: 15px 60px; border: none; border-radius: 50px; background: linear-gradient(135deg, #dc2626 0%, #f59e0b 100%); color: white; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px rgba(220, 38, 38, 0.6); display: inline-flex; align-items: center; gap: 10px;" aria-label="领取泡泡鲸过年红包">
                 <span style="font-size: 28px;">🧧</span>
                 泡泡鲸过年
                 <span style="font-size: 28px;">🧧</span>
@@ -237,16 +237,16 @@
 
             <!-- 低调的灰色下划线文字"开发者模式" -->
             <div style="text-align: center; margin-top: 20px;">
-                <span id="dev-mode-text" style="color: #64748b; font-size: 14px; text-decoration: underline; cursor: pointer; user-select: none; opacity: 0.7;">开发者模式</span>
+                <span id="dev-mode-text" style="color: #64748b; font-size: 14px; text-decoration: underline; cursor: pointer; user-select: none; opacity: 0.7;" role="button" tabindex="0" aria-label="打开开发者模式">开发者模式</span>
             </div>
             
             <!-- 关闭按钮 -->
-            <button id="close-spring-modal" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #fcd34d; font-size: 24px; cursor: pointer;">×</button>
+            <button id="close-spring-modal" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #fcd34d; font-size: 24px; cursor: pointer;" aria-label="关闭弹窗">×</button>
         </div>
     </div>
     
     <!-- 领红包弹窗 -->
-    <div id="redpacket-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1001; justify-content: center; align-items: center;">
+    <div id="redpacket-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1001; justify-content: center; align-items: center;" role="dialog" aria-modal="true" aria-labelledby="redpacket-modal-title">
         <div style="width: 90%; max-width: 500px; background: linear-gradient(135deg, #2d1810 0%, #4a1f1f 100%); border-radius: 20px; padding: 30px; box-shadow: 0 0 50px rgba(255, 215, 0, 0.3); text-align: center; position: relative; border: 2px solid rgba(255, 215, 0, 0.3);">
             <!-- 兑换码领取页 -->
             <div id="redeem-step" class="modal-step">
