@@ -54,238 +54,261 @@ class VoiceAssistant {
     }
     
     createNeonBorder() {
-        this.neonBorder = document.createElement('div');
-        this.neonBorder.id = 'voice-neon-border';
-        this.neonBorder.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        `;
-        document.body.appendChild(this.neonBorder);
-        
         const style = document.createElement('style');
         style.textContent = `
+            /* 霓虹呼吸灯边框 - 全屏四周 */
+            #voice-neon-border {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                pointer-events: none;
+                z-index: 9999;
+                opacity: 0;
+                transition: opacity 0.5s ease;
+            }
+            
             #voice-neon-border.active {
                 opacity: 1;
             }
             
-            #voice-neon-border::before,
-            #voice-neon-border::after {
-                content: '';
+            /* 四条边框 - 霓虹呼吸灯效果 */
+            #voice-neon-border .neon-edge {
                 position: absolute;
+                background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
+                background-size: 200% 100%;
+                animation: neonFlow 3s linear infinite;
+            }
+            
+            #voice-neon-border .neon-edge-top {
                 top: 0;
                 left: 0;
                 right: 0;
-                bottom: 0;
-                border: 4px solid transparent;
-                animation: neonPulse 2s ease-in-out infinite;
-            }
-            
-            #voice-neon-border::before {
-                border-color: #ff00ff;
+                height: 3px;
                 box-shadow: 
                     0 0 10px #ff00ff,
                     0 0 20px #ff00ff,
-                    0 0 40px #ff00ff,
-                    inset 0 0 10px rgba(255, 0, 255, 0.3);
+                    0 0 40px #00ffff,
+                    0 0 60px #ff00ff;
             }
             
-            #voice-neon-border::after {
-                border-color: #00ffff;
+            #voice-neon-border .neon-edge-bottom {
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
                 box-shadow: 
                     0 0 10px #00ffff,
                     0 0 20px #00ffff,
+                    0 0 40px #ff00ff,
+                    0 0 60px #00ffff;
+            }
+            
+            #voice-neon-border .neon-edge-left {
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 3px;
+                background: linear-gradient(180deg, #ff00ff, #00ffff, #ff00ff);
+                background-size: 100% 200%;
+                box-shadow: 
+                    0 0 10px #ff00ff,
+                    0 0 20px #ff00ff,
                     0 0 40px #00ffff,
+                    0 0 60px #ff00ff;
+            }
+            
+            #voice-neon-border .neon-edge-right {
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: 3px;
+                background: linear-gradient(180deg, #00ffff, #ff00ff, #00ffff);
+                background-size: 100% 200%;
+                box-shadow: 
+                    0 0 10px #00ffff,
+                    0 0 20px #00ffff,
+                    0 0 40px #ff00ff,
+                    0 0 60px #00ffff;
+            }
+            
+            @keyframes neonFlow {
+                0% { background-position: 0% 50%; }
+                100% { background-position: 200% 50%; }
+            }
+            
+            /* 四角装饰 */
+            #voice-neon-border .neon-corner {
+                position: absolute;
+                width: 30px;
+                height: 30px;
+                border: 3px solid;
+                animation: cornerGlow 2s ease-in-out infinite;
+            }
+            
+            #voice-neon-border .neon-corner-tl {
+                top: 0;
+                left: 0;
+                border-right: none;
+                border-bottom: none;
+                border-color: #ff00ff;
+                box-shadow: 
+                    -5px -5px 15px #ff00ff,
+                    inset 0 0 10px rgba(255, 0, 255, 0.3);
+            }
+            
+            #voice-neon-border .neon-corner-tr {
+                top: 0;
+                right: 0;
+                border-left: none;
+                border-bottom: none;
+                border-color: #00ffff;
+                box-shadow: 
+                    5px -5px 15px #00ffff,
+                    inset 0 0 10px rgba(0, 255, 255, 0.3);
+                animation-delay: 0.5s;
+            }
+            
+            #voice-neon-border .neon-corner-bl {
+                bottom: 0;
+                left: 0;
+                border-right: none;
+                border-top: none;
+                border-color: #00ffff;
+                box-shadow: 
+                    -5px 5px 15px #00ffff,
                     inset 0 0 10px rgba(0, 255, 255, 0.3);
                 animation-delay: 1s;
             }
             
-            @keyframes neonPulse {
-                0%, 100% {
-                    opacity: 0.6;
-                    filter: brightness(1);
-                }
-                50% {
-                    opacity: 1;
-                    filter: brightness(1.3);
-                }
-            }
-            
-            #voice-neon-border .corner {
-                position: absolute;
-                width: 50px;
-                height: 50px;
-                border: 3px solid;
-                animation: cornerPulse 1.5s ease-in-out infinite;
-            }
-            
-            #voice-neon-border .corner-tl {
-                top: 0;
-                left: 0;
-                border-right: none;
-                border-bottom: none;
-                border-color: #ff00ff;
-                box-shadow: -5px -5px 20px #ff00ff;
-            }
-            
-            #voice-neon-border .corner-tr {
-                top: 0;
-                right: 0;
-                border-left: none;
-                border-bottom: none;
-                border-color: #00ffff;
-                box-shadow: 5px -5px 20px #00ffff;
-                animation-delay: 0.5s;
-            }
-            
-            #voice-neon-border .corner-bl {
-                bottom: 0;
-                left: 0;
-                border-right: none;
-                border-top: none;
-                border-color: #00ffff;
-                box-shadow: -5px 5px 20px #00ffff;
-                animation-delay: 1s;
-            }
-            
-            #voice-neon-border .corner-br {
+            #voice-neon-border .neon-corner-br {
                 bottom: 0;
                 right: 0;
                 border-left: none;
                 border-top: none;
                 border-color: #ff00ff;
-                box-shadow: 5px 5px 20px #ff00ff;
+                box-shadow: 
+                    5px 5px 15px #ff00ff,
+                    inset 0 0 10px rgba(255, 0, 255, 0.3);
                 animation-delay: 1.5s;
             }
             
-            @keyframes cornerPulse {
+            @keyframes cornerGlow {
                 0%, 100% {
+                    opacity: 0.7;
                     transform: scale(1);
+                }
+                50% {
+                    opacity: 1;
+                    transform: scale(1.1);
+                }
+            }
+            
+            /* 呼吸动画 - 整体亮度变化 */
+            #voice-neon-border.active .neon-edge {
+                animation: neonFlow 3s linear infinite, neonBreath 2s ease-in-out infinite;
+            }
+            
+            @keyframes neonBreath {
+                0%, 100% {
+                    filter: brightness(1);
                     opacity: 0.8;
                 }
                 50% {
-                    transform: scale(1.1);
+                    filter: brightness(1.5);
                     opacity: 1;
                 }
             }
             
-            #voice-status-indicator {
+            /* 顶部状态提示 - 小巧不遮挡 */
+            #voice-status-toast {
                 position: fixed;
-                top: 50%;
+                top: 80px;
                 left: 50%;
-                transform: translate(-50%, -50%);
-                background: rgba(0, 0, 0, 0.95);
-                border: 2px solid #ff00ff;
-                border-radius: 20px;
-                padding: 30px 50px;
-                z-index: 10001;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                border: 1px solid #ff00ff;
+                border-radius: 30px;
+                padding: 10px 25px;
+                z-index: 10000;
                 display: none;
-                flex-direction: column;
                 align-items: center;
-                gap: 15px;
-                box-shadow: 
-                    0 0 30px rgba(255, 0, 255, 0.5),
-                    0 0 60px rgba(0, 255, 255, 0.3);
+                gap: 10px;
+                box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+                backdrop-filter: blur(10px);
             }
             
-            #voice-status-indicator.show {
+            #voice-status-toast.show {
                 display: flex;
-                animation: fadeInScale 0.3s ease-out;
+                animation: toastSlide 0.3s ease-out;
             }
             
-            @keyframes fadeInScale {
+            @keyframes toastSlide {
                 from {
                     opacity: 0;
-                    transform: translate(-50%, -50%) scale(0.8);
+                    transform: translateX(-50%) translateY(-20px);
                 }
                 to {
                     opacity: 1;
-                    transform: translate(-50%, -50%) scale(1);
+                    transform: translateX(-50%) translateY(0);
                 }
             }
             
-            #voice-status-indicator .icon {
-                font-size: 48px;
-                animation: bounce 1s ease-in-out infinite;
+            #voice-status-toast .icon {
+                font-size: 20px;
+                animation: pulse 1s ease-in-out infinite;
             }
             
-            @keyframes bounce {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-10px); }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.2); }
             }
             
-            #voice-status-indicator .text {
+            #voice-status-toast .text {
                 color: #fff;
-                font-size: 18px;
+                font-size: 14px;
                 font-weight: 500;
             }
             
-            #voice-status-indicator .transcript {
+            #voice-status-toast .transcript {
                 color: #00ffff;
-                font-size: 14px;
-                max-width: 300px;
-                text-align: center;
-                min-height: 20px;
-            }
-            
-            /* 摄像头预览样式 */
-            #gesture-camera-preview {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                width: 200px;
-                height: 150px;
-                border-radius: 12px;
-                border: 2px solid #ff00ff;
-                box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
-                z-index: 9998;
-                display: none;
+                font-size: 12px;
+                max-width: 200px;
                 overflow: hidden;
-            }
-            
-            #gesture-camera-preview video {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                transform: scaleX(-1);
-            }
-            
-            #gesture-camera-preview .close-btn {
-                position: absolute;
-                top: 5px;
-                right: 5px;
-                background: rgba(0, 0, 0, 0.7);
-                border: none;
-                color: white;
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                cursor: pointer;
-                font-size: 14px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
         `;
         document.head.appendChild(style);
         
-        ['tl', 'tr', 'bl', 'br'].forEach(pos => {
-            const corner = document.createElement('div');
-            corner.className = `corner corner-${pos}`;
-            this.neonBorder.appendChild(corner);
+        this.neonBorder = document.createElement('div');
+        this.neonBorder.id = 'voice-neon-border';
+        
+        const edges = ['top', 'bottom', 'left', 'right'];
+        edges.forEach(edge => {
+            const el = document.createElement('div');
+            el.className = `neon-edge neon-edge-${edge}`;
+            this.neonBorder.appendChild(el);
         });
         
-        this.statusIndicator = document.createElement('div');
-        this.statusIndicator.id = 'voice-status-indicator';
-        this.statusIndicator.innerHTML = `
-            <div class="icon">🐋</div>
-            <div class="text">正在聆听...</div>
-            <div class="transcript"></div>
+        const corners = ['tl', 'tr', 'bl', 'br'];
+        corners.forEach(corner => {
+            const el = document.createElement('div');
+            el.className = `neon-corner neon-corner-${corner}`;
+            this.neonBorder.appendChild(el);
+        });
+        
+        document.body.appendChild(this.neonBorder);
+        
+        this.statusToast = document.createElement('div');
+        this.statusToast.id = 'voice-status-toast';
+        this.statusToast.innerHTML = `
+            <span class="icon">🐋</span>
+            <span class="text">正在聆听...</span>
+            <span class="transcript"></span>
         `;
-        document.body.appendChild(this.statusIndicator);
+        document.body.appendChild(this.statusToast);
     }
     
     handleStart() {
@@ -369,8 +392,8 @@ class VoiceAssistant {
             this.lastTranscript = currentTranscript;
             console.log('🎤 识别结果:', currentTranscript);
             
-            if (this.statusIndicator) {
-                const transcriptEl = this.statusIndicator.querySelector('.transcript');
+            if (this.statusToast) {
+                const transcriptEl = this.statusToast.querySelector('.transcript');
                 if (transcriptEl) {
                     transcriptEl.textContent = currentTranscript;
                 }
@@ -423,11 +446,11 @@ class VoiceAssistant {
         if (this.neonBorder) {
             this.neonBorder.classList.add('active');
         }
-        if (this.statusIndicator) {
-            this.statusIndicator.classList.add('show');
-            const textEl = this.statusIndicator.querySelector('.text');
+        if (this.statusToast) {
+            this.statusToast.classList.add('show');
+            const textEl = this.statusToast.querySelector('.text');
             if (textEl) {
-                textEl.textContent = '🐋 泡泡鲸已唤醒';
+                textEl.textContent = '🐋 已唤醒';
             }
         }
         
@@ -443,8 +466,8 @@ class VoiceAssistant {
         if (this.neonBorder) {
             this.neonBorder.classList.remove('active');
         }
-        if (this.statusIndicator) {
-            this.statusIndicator.classList.remove('show');
+        if (this.statusToast) {
+            this.statusToast.classList.remove('show');
         }
         this.wakeWordDetected = false;
         
