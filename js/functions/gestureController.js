@@ -15,13 +15,15 @@ class GestureController {
         
         this.lastGesture = null;
         this.gestureStartTime = 0;
-        this.gestureHoldTime = 500;
+        this.gestureHoldTime = 300;
         
         this.lastHandY = 0;
         this.lastHandX = 0;
-        this.swipeThreshold = 50;
+        this.swipeThreshold = 30;
         this.lastSwipeTime = 0;
-        this.swipeCooldown = 300;
+        this.swipeCooldown = 200;
+        this.swipeHistory = [];
+        this.swipeHistoryMax = 5;
         
         this.pinchDistance = 0;
         this.lastPinchDistance = 0;
@@ -516,35 +518,59 @@ class GestureController {
         const ring = landmarks[16];
         const pinky = landmarks[20];
         const wrist = landmarks[0];
+        const indexMcp = landmarks[5];
+        const middleMcp = landmarks[9];
+        const ringMcp = landmarks[13];
+        const pinkyMcp = landmarks[17];
         
-        const thumbExtended = thumb.y < landmarks[3].y;
-        const indexExtended = index.y < landmarks[6].y;
-        const middleExtended = middle.y < landmarks[10].y;
-        const ringExtended = ring.y < landmarks[14].y;
-        const pinkyExtended = pinky.y < landmarks[18].y;
+        const thumbExtended = this.isFingerExtended(landmarks, 'thumb');
+        const indexExtended = this.isFingerExtended(landmarks, 'index');
+        const middleExtended = this.isFingerExtended(landmarks, 'middle');
+        const ringExtended = this.isFingerExtended(landmarks, 'ring');
+        const pinkyExtended = this.isFingerExtended(landmarks, 'pinky');
         
-        const allExtended = indexExtended && middleExtended && ringExtended && pinkyExtended;
-        const allBent = !indexExtended && !middleExtended && !ringExtended && !pinkyExtended;
+        const extendedCount = [indexExtended, middleExtended, ringExtended, pinkyExtended].filter(Boolean).length;
         
         const thumbIndexDist = this.getDistance(thumb, index);
         
-        if (allBent) {
+        if (extendedCount === 0 && !thumbExtended) {
             return 'fist';
         }
         
-        if (thumbIndexDist < 0.05 && !middleExtended && !ringExtended && !pinkyExtended) {
+        if (thumbIndexDist < 0.06 && middleExtended === false && ringExtended === false && pinkyExtended === false) {
             return 'pinch';
         }
         
-        if (thumbIndexDist > 0.08 && thumbExtended && indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
+        if (thumbIndexDist > 0.1 && thumbExtended && indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
             return 'zoom_out';
         }
         
-        if (allExtended && thumbExtended) {
-            return 'open_palm';
+        return null;
+    }
+    
+    isFingerExtended(landmarks, finger) {
+        const fingerIndices = {
+            thumb: [1, 2, 3, 4],
+            index: [5, 6, 7, 8],
+            middle: [9, 10, 11, 12],
+            ring: [13, 14, 15, 16],
+            pinky: [17, 18, 19, 20]
+        };
+        
+        const indices = fingerIndices[finger];
+        if (!indices) return false;
+        
+        if (finger === 'thumb') {
+            const thumb = landmarks[4];
+            const indexMcp = landmarks[5];
+            return thumb.x < indexMcp.x;
         }
         
-        return null;
+        const tip = landmarks[indices[3]];
+        const pip = landmarks[indices[1]];
+        const mcp = landmarks[indices[0]];
+        
+        return tip.y < pip.y && pip.y < mcp.y;
     }
     
     getDistance(p1, p2) {
@@ -556,24 +582,67 @@ class GestureController {
     
     detectSwipe(landmarks) {
         const wrist = landmarks[0];
+        const indexTip = landmarks[8];
+        const middleTip = landmarks[12];
+        
         const now = Date.now();
         
         if (now - this.lastSwipeTime < this.swipeCooldown) return;
         
-        const deltaY = wrist.y - this.lastHandY;
-        const deltaX = wrist.x - this.lastHandX;
+        const indexExtended = this.isFingerExtended(landmarks, 'index');
+        const middleExtended = this.isFingerExtended(landmarks, 'middle');
+        const ringExtended = this.isFingerExtended(landmarks, 'ring');
+        const pinkyExtended = this.isFingerExtended(landmarks, 'pinky');
         
-        if (Math.abs(deltaY) > 0.1) {
-            if (deltaY > 0) {
-                this.executeSwipe('down');
-            } else {
-                this.executeSwipe('up');
-            }
-            this.lastSwipeTime = now;
+        const isPalmSwipe = indexExtended && middleExtended && ringExtended && pinkyExtended;
+        const isOneFingerSwipe = indexExtended && !middleExtended && !ringExtended && !pinkyExtended;
+        const isTwoFingerSwipe = indexExtended && middleExtended && !ringExtended && !pinkyExtended;
+        
+        if (!isPalmSwipe && !isOneFingerSwipe && !isTwoFingerSwipe) {
+            this.swipeHistory = [];
+            return;
         }
         
-        this.lastHandY = wrist.y;
-        this.lastHandX = wrist.x;
+        let referencePoint;
+        if (isPalmSwipe) {
+            referencePoint = wrist;
+        } else if (isTwoFingerSwipe) {
+            referencePoint = {
+                x: (indexTip.x + middleTip.x) / 2,
+                y: (indexTip.y + middleTip.y) / 2
+            };
+        } else {
+            referencePoint = indexTip;
+        }
+        
+        this.swipeHistory.push({
+            y: referencePoint.y,
+            time: now
+        });
+        
+        if (this.swipeHistory.length > this.swipeHistoryMax) {
+            this.swipeHistory.shift();
+        }
+        
+        if (this.swipeHistory.length >= 3) {
+            const first = this.swipeHistory[0];
+            const last = this.swipeHistory[this.swipeHistory.length - 1];
+            const deltaY = last.y - first.y;
+            const deltaTime = last.time - first.time;
+            
+            if (deltaTime < 500 && Math.abs(deltaY) > 0.05) {
+                if (deltaY > 0) {
+                    this.executeSwipe('down');
+                } else {
+                    this.executeSwipe('up');
+                }
+                this.lastSwipeTime = now;
+                this.swipeHistory = [];
+            }
+        }
+        
+        this.lastHandY = referencePoint.y;
+        this.lastHandX = referencePoint.x;
     }
     
     detectClap(handsLandmarks) {
@@ -596,7 +665,7 @@ class GestureController {
         
         switch (gesture) {
             case 'fist':
-                this.takeScreenshot();
+                this.simulateShortcut('screenshot');
                 break;
             case 'pinch':
                 this.zoomIn();
@@ -604,13 +673,43 @@ class GestureController {
             case 'zoom_out':
                 this.zoomOut();
                 break;
-            case 'open_palm':
-                this.showVoiceAssistant();
-                break;
         }
         
         if (this.onGesture) {
             this.onGesture(gesture);
+        }
+    }
+    
+    simulateShortcut(action) {
+        console.log('⌨️ 模拟快捷键:', action);
+        
+        if (action === 'screenshot') {
+            this.showQuickIndicator('📸 截图 (Alt+A)');
+            
+            const event = new KeyboardEvent('keydown', {
+                key: 'a',
+                code: 'KeyA',
+                keyCode: 65,
+                which: 65,
+                altKey: true,
+                bubbles: true
+            });
+            document.dispatchEvent(event);
+            
+            const event2 = new KeyboardEvent('keyup', {
+                key: 'a',
+                code: 'KeyA',
+                keyCode: 65,
+                which: 65,
+                altKey: true,
+                bubbles: true
+            });
+            document.dispatchEvent(event2);
+            
+            document.body.style.border = '4px solid rgba(100, 200, 255, 0.8)';
+            setTimeout(() => {
+                document.body.style.border = '';
+            }, 300);
         }
     }
     
@@ -671,15 +770,13 @@ class GestureController {
         const icons = {
             'fist': '✊',
             'pinch': '🤏',
-            'zoom_out': '👌',
-            'open_palm': '🖐️'
+            'zoom_out': '👌'
         };
         
         const names = {
             'fist': '截图',
             'pinch': '放大',
-            'zoom_out': '缩小',
-            'open_palm': '唤醒助手'
+            'zoom_out': '缩小'
         };
         
         const icon = this.gestureIndicator.querySelector('.gesture-icon');
