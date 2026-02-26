@@ -46,20 +46,51 @@ class GestureController {
             clap: true
         };
         
+        this.trailCanvas = null;
+        this.trailCtx = null;
+        this.trailPoints = [];
+        this.maxTrailPoints = 30;
+        
         this.styles = null;
     }
     
     async init() {
         this.createStyles();
+        this.createTrailCanvas();
         this.createPreviewContainer();
         this.createGestureIndicator();
         
         console.log('🖐️ 手势控制器已初始化');
     }
     
+    createTrailCanvas() {
+        this.trailCanvas = document.createElement('canvas');
+        this.trailCanvas.id = 'finger-trail-canvas';
+        this.trailCanvas.width = window.innerWidth;
+        this.trailCanvas.height = window.innerHeight;
+        document.body.appendChild(this.trailCanvas);
+        this.trailCtx = this.trailCanvas.getContext('2d');
+        
+        window.addEventListener('resize', () => {
+            this.trailCanvas.width = window.innerWidth;
+            this.trailCanvas.height = window.innerHeight;
+        });
+    }
+    
     createStyles() {
         this.styles = document.createElement('style');
         this.styles.textContent = `
+            /* 手指笔迹画布 */
+            #finger-trail-canvas {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 9997;
+            }
+            
             /* 摄像头预览容器 */
             #gesture-preview-container {
                 position: fixed;
@@ -510,6 +541,7 @@ class GestureController {
             
             for (const landmarks of results.multiHandLandmarks) {
                 this.drawHand(landmarks);
+                this.updateFingerTrail(landmarks);
             }
             
             if (results.multiHandLandmarks.length === 1) {
@@ -524,7 +556,75 @@ class GestureController {
             this.handsDetected = 0;
             this.updateStatus('🖐️ 检测中...');
             this.hideGestureIndicator();
+            this.fadeOutTrail();
         }
+    }
+    
+    updateFingerTrail(landmarks) {
+        const indexTip = landmarks[8];
+        const x = indexTip.x * window.innerWidth;
+        const y = indexTip.y * window.innerHeight;
+        
+        this.trailPoints.push({ x, y, time: Date.now() });
+        
+        if (this.trailPoints.length > this.maxTrailPoints) {
+            this.trailPoints.shift();
+        }
+        
+        this.drawTrail();
+    }
+    
+    drawTrail() {
+        this.trailCtx.clearRect(0, 0, this.trailCanvas.width, this.trailCanvas.height);
+        
+        if (this.trailPoints.length < 2) return;
+        
+        const now = Date.now();
+        
+        for (let i = 1; i < this.trailPoints.length; i++) {
+            const p1 = this.trailPoints[i - 1];
+            const p2 = this.trailPoints[i];
+            const age = now - p2.time;
+            const maxAge = 1000;
+            
+            if (age > maxAge) continue;
+            
+            const alpha = 1 - (age / maxAge);
+            const lineWidth = 3 + (1 - i / this.trailPoints.length) * 5;
+            
+            const gradient = this.trailCtx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+            gradient.addColorStop(0, `rgba(100, 200, 255, ${alpha * 0.8})`);
+            gradient.addColorStop(1, `rgba(180, 130, 255, ${alpha * 0.8})`);
+            
+            this.trailCtx.beginPath();
+            this.trailCtx.moveTo(p1.x, p1.y);
+            this.trailCtx.lineTo(p2.x, p2.y);
+            this.trailCtx.strokeStyle = gradient;
+            this.trailCtx.lineWidth = lineWidth;
+            this.trailCtx.lineCap = 'round';
+            this.trailCtx.stroke();
+        }
+        
+        // 绘制手指位置光点
+        if (this.trailPoints.length > 0) {
+            const lastPoint = this.trailPoints[this.trailPoints.length - 1];
+            this.trailCtx.beginPath();
+            this.trailCtx.arc(lastPoint.x, lastPoint.y, 8, 0, Math.PI * 2);
+            this.trailCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            this.trailCtx.fill();
+            
+            this.trailCtx.beginPath();
+            this.trailCtx.arc(lastPoint.x, lastPoint.y, 12, 0, Math.PI * 2);
+            this.trailCtx.strokeStyle = 'rgba(100, 200, 255, 0.6)';
+            this.trailCtx.lineWidth = 2;
+            this.trailCtx.stroke();
+        }
+    }
+    
+    fadeOutTrail() {
+        const now = Date.now();
+        this.trailPoints = this.trailPoints.filter(p => now - p.time < 1000);
+        this.drawTrail();
     }
     
     drawHand(landmarks) {
@@ -598,10 +698,6 @@ class GestureController {
         const ring = landmarks[16];
         const pinky = landmarks[20];
         const wrist = landmarks[0];
-        const indexMcp = landmarks[5];
-        const middleMcp = landmarks[9];
-        const ringMcp = landmarks[13];
-        const pinkyMcp = landmarks[17];
         
         const thumbExtended = this.isFingerExtended(landmarks, 'thumb');
         const indexExtended = this.isFingerExtended(landmarks, 'index');
@@ -613,7 +709,8 @@ class GestureController {
         
         const thumbIndexDist = this.getDistance(thumb, index);
         
-        if (extendedCount === 0 && !thumbExtended) {
+        // 更严格的握拳检测：所有手指必须完全弯曲
+        if (this.isStrictFist(landmarks)) {
             return 'fist';
         }
         
@@ -626,6 +723,45 @@ class GestureController {
         }
         
         return null;
+    }
+    
+    isStrictFist(landmarks) {
+        const fingerTips = [8, 12, 16, 20];
+        const fingerPips = [6, 10, 14, 18];
+        const fingerMcps = [5, 9, 13, 17];
+        const wrist = landmarks[0];
+        
+        let allFingersBent = true;
+        
+        for (let i = 0; i < 4; i++) {
+            const tip = landmarks[fingerTips[i]];
+            const pip = landmarks[fingerPips[i]];
+            const mcp = landmarks[fingerMcps[i]];
+            
+            if (tip.y < pip.y || pip.y < mcp.y) {
+                allFingersBent = false;
+                break;
+            }
+            
+            const tipToWrist = this.getDistance(tip, wrist);
+            const mcpToWrist = this.getDistance(mcp, wrist);
+            
+            if (tipToWrist > mcpToWrist * 0.8) {
+                allFingersBent = false;
+                break;
+            }
+        }
+        
+        const thumb = landmarks[4];
+        const thumbIp = landmarks[3];
+        const thumbMcp = landmarks[2];
+        const thumbBent = thumb.y > thumbIp.y && thumbIp.y > thumbMcp.y;
+        
+        const indexBase = landmarks[5];
+        const thumbToIndex = this.getDistance(thumb, indexBase);
+        const thumbHidden = thumbToIndex < 0.15;
+        
+        return allFingersBent && (thumbBent || thumbHidden);
     }
     
     isFingerExtended(landmarks, finger) {
