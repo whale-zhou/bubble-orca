@@ -7,7 +7,8 @@ class VoiceAssistant {
         this.isEnabled = false;
         this.recognition = null;
         this.synthesis = window.speechSynthesis;
-        this.wakeWords = ['泡泡鲸', 'bubble orca', 'bubbleorca', '泡泡鲸密码箱', '泡泡金', '泡鲸'];
+        this.wakeWords = ['泡泡鲸', 'bubble orca', 'bubbleorca', '泡泡鲸密码箱', '泡泡金', '泡鲸', '泡泡', '小鲸', '鲸鱼'];
+        this.wakeWordThreshold = 0.6;
         this.onWakeUp = null;
         this.onCommand = null;
         this.neonBorder = null;
@@ -56,7 +57,7 @@ class VoiceAssistant {
     createNeonBorder() {
         const style = document.createElement('style');
         style.textContent = `
-            /* 霓虹呼吸灯边框 - 全屏四周 */
+            /* 霓虹海浪边框 - 全屏四周 */
             #voice-neon-border {
                 position: fixed;
                 top: 0;
@@ -67,175 +68,200 @@ class VoiceAssistant {
                 z-index: 9999;
                 opacity: 0;
                 transition: opacity 0.5s ease;
+                overflow: hidden;
             }
             
             #voice-neon-border.active {
                 opacity: 1;
             }
             
-            /* 四条边框 - 霓虹呼吸灯效果 */
-            #voice-neon-border .neon-edge {
+            /* 海浪边框 - 多层波浪效果 */
+            #voice-neon-border .wave-border {
                 position: absolute;
-                background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
+            }
+            
+            /* 顶部海浪 */
+            #voice-neon-border .wave-top {
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, 
+                    transparent 0%,
+                    #00ffff 15%,
+                    #ff00ff 30%,
+                    #00ffff 45%,
+                    #ff00ff 60%,
+                    #00ffff 75%,
+                    #ff00ff 90%,
+                    transparent 100%
+                );
                 background-size: 200% 100%;
-                animation: neonFlow 3s linear infinite;
-            }
-            
-            #voice-neon-border .neon-edge-top {
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 3px;
+                animation: waveFlowTop 2s linear infinite;
                 box-shadow: 
-                    0 0 10px #ff00ff,
-                    0 0 20px #ff00ff,
-                    0 0 40px #00ffff,
-                    0 0 60px #ff00ff;
-            }
-            
-            #voice-neon-border .neon-edge-bottom {
-                bottom: 0;
-                left: 0;
-                right: 0;
-                height: 3px;
-                box-shadow: 
-                    0 0 10px #00ffff,
                     0 0 20px #00ffff,
                     0 0 40px #ff00ff,
                     0 0 60px #00ffff;
             }
             
-            #voice-neon-border .neon-edge-left {
-                top: 0;
-                left: 0;
+            /* 底部海浪 */
+            #voice-neon-border .wave-bottom {
                 bottom: 0;
-                width: 3px;
-                background: linear-gradient(180deg, #ff00ff, #00ffff, #ff00ff);
-                background-size: 100% 200%;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, 
+                    transparent 0%,
+                    #ff00ff 15%,
+                    #00ffff 30%,
+                    #ff00ff 45%,
+                    #00ffff 60%,
+                    #ff00ff 75%,
+                    #00ffff 90%,
+                    transparent 100%
+                );
+                background-size: 200% 100%;
+                animation: waveFlowBottom 2s linear infinite;
                 box-shadow: 
-                    0 0 10px #ff00ff,
                     0 0 20px #ff00ff,
                     0 0 40px #00ffff,
                     0 0 60px #ff00ff;
             }
             
-            #voice-neon-border .neon-edge-right {
+            /* 左侧海浪 */
+            #voice-neon-border .wave-left {
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 4px;
+                background: linear-gradient(180deg, 
+                    transparent 0%,
+                    #ff00ff 15%,
+                    #00ffff 30%,
+                    #ff00ff 45%,
+                    #00ffff 60%,
+                    #ff00ff 75%,
+                    #00ffff 90%,
+                    transparent 100%
+                );
+                background-size: 100% 200%;
+                animation: waveFlowLeft 2.5s linear infinite;
+                box-shadow: 
+                    0 0 20px #ff00ff,
+                    0 0 40px #00ffff,
+                    0 0 60px #ff00ff;
+            }
+            
+            /* 右侧海浪 */
+            #voice-neon-border .wave-right {
                 top: 0;
                 right: 0;
                 bottom: 0;
-                width: 3px;
-                background: linear-gradient(180deg, #00ffff, #ff00ff, #00ffff);
+                width: 4px;
+                background: linear-gradient(180deg, 
+                    transparent 0%,
+                    #00ffff 15%,
+                    #ff00ff 30%,
+                    #00ffff 45%,
+                    #ff00ff 60%,
+                    #00ffff 75%,
+                    #ff00ff 90%,
+                    transparent 100%
+                );
                 background-size: 100% 200%;
+                animation: waveFlowRight 2.5s linear infinite;
                 box-shadow: 
-                    0 0 10px #00ffff,
                     0 0 20px #00ffff,
                     0 0 40px #ff00ff,
                     0 0 60px #00ffff;
             }
             
-            @keyframes neonFlow {
-                0% { background-position: 0% 50%; }
-                100% { background-position: 200% 50%; }
+            /* 海浪流动动画 */
+            @keyframes waveFlowTop {
+                0% { background-position: 0% 0%; }
+                100% { background-position: 200% 0%; }
             }
             
-            /* 四角装饰 */
-            #voice-neon-border .neon-corner {
+            @keyframes waveFlowBottom {
+                0% { background-position: 200% 0%; }
+                100% { background-position: 0% 0%; }
+            }
+            
+            @keyframes waveFlowLeft {
+                0% { background-position: 0% 0%; }
+                100% { background-position: 0% 200%; }
+            }
+            
+            @keyframes waveFlowRight {
+                0% { background-position: 0% 200%; }
+                100% { background-position: 0% 0%; }
+            }
+            
+            /* 四角光晕装饰 */
+            #voice-neon-border .corner-glow {
                 position: absolute;
-                width: 30px;
-                height: 30px;
-                border: 3px solid;
-                animation: cornerGlow 2s ease-in-out infinite;
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                filter: blur(15px);
+                animation: cornerPulse 2s ease-in-out infinite;
             }
             
-            #voice-neon-border .neon-corner-tl {
-                top: 0;
-                left: 0;
-                border-right: none;
-                border-bottom: none;
-                border-color: #ff00ff;
-                box-shadow: 
-                    -5px -5px 15px #ff00ff,
-                    inset 0 0 10px rgba(255, 0, 255, 0.3);
+            #voice-neon-border .corner-glow-tl {
+                top: -20px;
+                left: -20px;
+                background: radial-gradient(circle, #ff00ff 0%, transparent 70%);
             }
             
-            #voice-neon-border .neon-corner-tr {
-                top: 0;
-                right: 0;
-                border-left: none;
-                border-bottom: none;
-                border-color: #00ffff;
-                box-shadow: 
-                    5px -5px 15px #00ffff,
-                    inset 0 0 10px rgba(0, 255, 255, 0.3);
+            #voice-neon-border .corner-glow-tr {
+                top: -20px;
+                right: -20px;
+                background: radial-gradient(circle, #00ffff 0%, transparent 70%);
                 animation-delay: 0.5s;
             }
             
-            #voice-neon-border .neon-corner-bl {
-                bottom: 0;
-                left: 0;
-                border-right: none;
-                border-top: none;
-                border-color: #00ffff;
-                box-shadow: 
-                    -5px 5px 15px #00ffff,
-                    inset 0 0 10px rgba(0, 255, 255, 0.3);
+            #voice-neon-border .corner-glow-bl {
+                bottom: -20px;
+                left: -20px;
+                background: radial-gradient(circle, #00ffff 0%, transparent 70%);
                 animation-delay: 1s;
             }
             
-            #voice-neon-border .neon-corner-br {
-                bottom: 0;
-                right: 0;
-                border-left: none;
-                border-top: none;
-                border-color: #ff00ff;
-                box-shadow: 
-                    5px 5px 15px #ff00ff,
-                    inset 0 0 10px rgba(255, 0, 255, 0.3);
+            #voice-neon-border .corner-glow-br {
+                bottom: -20px;
+                right: -20px;
+                background: radial-gradient(circle, #ff00ff 0%, transparent 70%);
                 animation-delay: 1.5s;
             }
             
-            @keyframes cornerGlow {
+            @keyframes cornerPulse {
                 0%, 100% {
-                    opacity: 0.7;
+                    opacity: 0.5;
                     transform: scale(1);
                 }
                 50% {
                     opacity: 1;
-                    transform: scale(1.1);
+                    transform: scale(1.3);
                 }
             }
             
-            /* 呼吸动画 - 整体亮度变化 */
-            #voice-neon-border.active .neon-edge {
-                animation: neonFlow 3s linear infinite, neonBreath 2s ease-in-out infinite;
-            }
-            
-            @keyframes neonBreath {
-                0%, 100% {
-                    filter: brightness(1);
-                    opacity: 0.8;
-                }
-                50% {
-                    filter: brightness(1.5);
-                    opacity: 1;
-                }
-            }
-            
-            /* 顶部状态提示 - 小巧不遮挡 */
+            /* 顶部状态提示 */
             #voice-status-toast {
                 position: fixed;
                 top: 80px;
                 left: 50%;
                 transform: translateX(-50%);
                 background: rgba(0, 0, 0, 0.8);
-                border: 1px solid #ff00ff;
+                border: 1px solid rgba(0, 255, 255, 0.5);
                 border-radius: 30px;
                 padding: 10px 25px;
                 z-index: 10000;
                 display: none;
                 align-items: center;
                 gap: 10px;
-                box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+                box-shadow: 
+                    0 0 20px rgba(0, 255, 255, 0.3),
+                    0 0 40px rgba(255, 0, 255, 0.2);
                 backdrop-filter: blur(10px);
             }
             
@@ -285,17 +311,17 @@ class VoiceAssistant {
         this.neonBorder = document.createElement('div');
         this.neonBorder.id = 'voice-neon-border';
         
-        const edges = ['top', 'bottom', 'left', 'right'];
-        edges.forEach(edge => {
+        const waves = ['top', 'bottom', 'left', 'right'];
+        waves.forEach(wave => {
             const el = document.createElement('div');
-            el.className = `neon-edge neon-edge-${edge}`;
+            el.className = `wave-border wave-${wave}`;
             this.neonBorder.appendChild(el);
         });
         
         const corners = ['tl', 'tr', 'bl', 'br'];
         corners.forEach(corner => {
             const el = document.createElement('div');
-            el.className = `neon-corner neon-corner-${corner}`;
+            el.className = `corner-glow corner-glow-${corner}`;
             this.neonBorder.appendChild(el);
         });
         
@@ -409,7 +435,17 @@ class VoiceAssistant {
         console.log('📝 处理语音:', transcript);
         
         for (const wakeWord of this.wakeWords) {
-            if (transcript.includes(wakeWord.toLowerCase())) {
+            const wakeWordLower = wakeWord.toLowerCase();
+            if (transcript.includes(wakeWordLower)) {
+                const command = transcript.replace(wakeWordLower, '').trim();
+                this.onWakeWordDetected(command);
+                return;
+            }
+        }
+        
+        for (const wakeWord of this.wakeWords) {
+            if (this.fuzzyMatch(transcript, wakeWord.toLowerCase(), this.wakeWordThreshold)) {
+                console.log('🎯 模糊匹配成功:', wakeWord);
                 const command = transcript.replace(wakeWord.toLowerCase(), '').trim();
                 this.onWakeWordDetected(command);
                 return;
@@ -422,6 +458,28 @@ class VoiceAssistant {
             }
             this.wakeWordDetected = false;
         }
+    }
+    
+    fuzzyMatch(text, pattern, threshold) {
+        const textLower = text.toLowerCase();
+        const patternLower = pattern.toLowerCase();
+        
+        if (textLower.includes(patternLower)) {
+            return true;
+        }
+        
+        let matchCount = 0;
+        let patternIndex = 0;
+        
+        for (let i = 0; i < textLower.length && patternIndex < patternLower.length; i++) {
+            if (textLower[i] === patternLower[patternIndex]) {
+                matchCount++;
+                patternIndex++;
+            }
+        }
+        
+        const similarity = matchCount / patternLower.length;
+        return similarity >= threshold;
     }
     
     onWakeWordDetected(command) {
