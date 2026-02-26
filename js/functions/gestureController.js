@@ -15,13 +15,15 @@ class GestureController {
         
         this.lastGesture = null;
         this.gestureStartTime = 0;
-        this.gestureHoldTime = 300;
+        this.gestureHoldTime = 400;
+        this.gestureCooldown = 500;
+        this.lastGestureExecuteTime = 0;
         
         this.lastHandY = 0;
         this.lastHandX = 0;
         this.swipeThreshold = 30;
         this.lastSwipeTime = 0;
-        this.swipeCooldown = 200;
+        this.swipeCooldown = 500;
         this.swipeHistory = [];
         this.swipeHistoryMax = 5;
         
@@ -31,7 +33,7 @@ class GestureController {
         
         this.handsDetected = 0;
         this.lastClapTime = 0;
-        this.clapCooldown = 1000;
+        this.clapCooldown = 800;
         
         this.onGesture = null;
         this.voiceAssistant = null;
@@ -493,16 +495,20 @@ class GestureController {
     onResults(results) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
+        const now = Date.now();
+        
         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
             this.handsDetected = results.multiHandLandmarks.length;
             
             for (const landmarks of results.multiHandLandmarks) {
                 this.drawHand(landmarks);
-                this.analyzeGesture(landmarks);
             }
             
-            if (results.multiHandLandmarks.length === 2) {
-                this.detectClap(results.multiHandLandmarks);
+            if (results.multiHandLandmarks.length === 1) {
+                this.analyzeGesture(results.multiHandLandmarks[0]);
+            } else if (results.multiHandLandmarks.length === 2) {
+                this.detectClap(results.multiHandLandmarks, now);
+                this.analyzeGesture(results.multiHandLandmarks[0]);
             }
             
             this.updateStatus(`🖐️ 检测到 ${this.handsDetected} 只手`);
@@ -550,19 +556,19 @@ class GestureController {
     
     analyzeGesture(landmarks) {
         const gesture = this.detectGesture(landmarks);
+        const now = Date.now();
         
         if (gesture) {
-            const now = Date.now();
-            
             if (gesture === this.lastGesture) {
                 const holdTime = now - this.gestureStartTime;
                 const progress = Math.min(holdTime / this.gestureHoldTime, 1);
                 
                 this.showGestureIndicator(gesture, progress);
                 
-                if (holdTime >= this.gestureHoldTime) {
+                if (holdTime >= this.gestureHoldTime && now - this.lastGestureExecuteTime >= this.gestureCooldown) {
                     this.executeGesture(gesture, landmarks);
-                    this.gestureStartTime = now + this.gestureHoldTime;
+                    this.lastGestureExecuteTime = now;
+                    this.gestureStartTime = now;
                 }
             } else {
                 this.lastGesture = gesture;
@@ -711,16 +717,18 @@ class GestureController {
         this.lastHandX = referencePoint.x;
     }
     
-    detectClap(handsLandmarks) {
-        const now = Date.now();
+    detectClap(handsLandmarks, now) {
         if (now - this.lastClapTime < this.clapCooldown) return;
         
         const leftWrist = handsLandmarks[0][0];
         const rightWrist = handsLandmarks[1][0];
+        const leftPalm = handsLandmarks[0][9];
+        const rightPalm = handsLandmarks[1][9];
         
-        const distance = this.getDistance(leftWrist, rightWrist);
+        const wristDistance = this.getDistance(leftWrist, rightWrist);
+        const palmDistance = this.getDistance(leftPalm, rightPalm);
         
-        if (distance < 0.15) {
+        if (wristDistance < 0.2 && palmDistance < 0.15) {
             this.lastClapTime = now;
             this.executeClap();
         }
