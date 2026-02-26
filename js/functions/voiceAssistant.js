@@ -7,8 +7,13 @@ class VoiceAssistant {
         this.isEnabled = false;
         this.recognition = null;
         this.synthesis = window.speechSynthesis;
-        this.wakeWords = ['泡泡鲸', 'bubble orca', 'bubbleorca', '泡泡鲸密码箱', '泡泡金', '泡鲸', '泡泡', '小鲸', '鲸鱼'];
-        this.wakeWordThreshold = 0.6;
+        this.wakeWords = [
+            '泡泡鲸', '泡泡金', '泡泡精', '泡泡青', '泡泡亲', '泡泡镜', '泡泡近', '泡泡庆',
+            '泡鲸', '泡金', '泡精', '泡青',
+            'bubble orca', 'bubble', 'orca', 'baba orca', 'babo orca', 'babble orca',
+            'bubul orca', 'bubor orca', 'bubble auca', 'bubble oca'
+        ];
+        this.wakeWordThreshold = 0.5;
         this.onWakeUp = null;
         this.onCommand = null;
         this.neonBorder = null;
@@ -478,7 +483,54 @@ class VoiceAssistant {
         }
         
         const similarity = matchCount / patternLower.length;
-        return similarity >= threshold;
+        if (similarity >= threshold) {
+            return true;
+        }
+        
+        // 拼音相似匹配 - 处理发音相近的情况
+        const pinyinMap = {
+            '鲸': ['金', '精', '青', '亲', '镜', '近', '庆', '京', '经', '清'],
+            '金': ['鲸', '精', '青', '亲', '镜', '近', '庆', '京', '经', '清'],
+            '泡': ['跑', '抛', '炮', '袍'],
+            'a': ['e', 'o', 'u'],
+            'e': ['a', 'i'],
+            'i': ['e', 'y'],
+            'o': ['a', 'u'],
+            'u': ['o', 'a'],
+            'b': ['p', 'v'],
+            'p': ['b'],
+            'c': ['k', 's'],
+            'k': ['c'],
+            's': ['c', 'z'],
+            'z': ['s'],
+            'l': ['r'],
+            'r': ['l'],
+            'm': ['n'],
+            'n': ['m']
+        };
+        
+        // 检查拼音相似度
+        let pinyinMatchCount = 0;
+        patternIndex = 0;
+        
+        for (let i = 0; i < textLower.length && patternIndex < patternLower.length; i++) {
+            const textChar = textLower[i];
+            const patternChar = patternLower[patternIndex];
+            
+            if (textChar === patternChar) {
+                pinyinMatchCount++;
+                patternIndex++;
+            } else if (pinyinMap[textChar] && pinyinMap[textChar].includes(patternChar)) {
+                pinyinMatchCount += 0.8;
+                patternIndex++;
+            } else if (pinyinMap[patternChar] && pinyinMap[patternChar].includes(textChar)) {
+                pinyinMatchCount += 0.8;
+                patternIndex++;
+            }
+        }
+        
+        const pinyinSimilarity = pinyinMatchCount / patternLower.length;
+        return pinyinSimilarity >= threshold;
     }
     
     onWakeWordDetected(command) {
