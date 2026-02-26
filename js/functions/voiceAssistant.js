@@ -9,9 +9,9 @@ class VoiceAssistant {
         this.synthesis = window.speechSynthesis;
         this.wakeWords = [
             '泡泡鲸', '泡泡金', '泡泡精', '泡泡青', '泡泡亲', '泡泡镜', '泡泡近', '泡泡庆',
-            '泡鲸', '泡金', '泡精', '泡青',
-            'bubble orca', 'bubble', 'orca',
-            'baba orca', 'babo orca', 'babble orca', 'babul orca',
+            '泡鲸', '泡金', '泡精', '泡青', '泡京', '泡经',
+            '泡泡', '小鲸', '鲸鱼',
+            'bubble orca', 'bubble', 'orca', 'baba orca', 'babo orca', 'babble orca', 'babul orca',
             'bubul orca', 'bubor orca', 'bubul auca', 'bubor auca',
             'bubble auca', 'bubble oca', 'bubble aka', 'bubble oka',
             'babo auca', 'baba auca', 'baba oca', 'babo oca',
@@ -20,9 +20,23 @@ class VoiceAssistant {
             'baobao orca', 'baobao', 'bao bao',
             'bubber orca', 'bubber', 'buba orca',
             'papa orca', 'papa', 'puple orca',
-            'bubble work', 'bubble walk', 'bubble water'
+            'bubble work', 'bubble walk', 'bubble water',
+            '泡泡鲸密码箱', '泡泡鲸密码'
         ];
-        this.wakeWordThreshold = 0.5;
+        this.wakeWordThreshold = 0.4;
+        
+        this.syllableMap = {
+            '泡': ['跑', '抛', '炮', '袍', '保', '宝', '报'],
+            '鲸': ['金', '精', '青', '亲', '镜', '近', '庆', '京', '经', '清', '音', '英'],
+            '金': ['鲸', '精', '青', '亲', '镜', '近', '庆', '京', '经', '清'],
+            'b': ['p', 'v', 'd'],
+            'p': ['b'],
+            'o': ['a', 'u', 'e'],
+            'a': ['o', 'u', 'e'],
+            'u': ['o', 'a'],
+            'l': ['r', 'n'],
+            'r': ['l', 'n']
+        };
         this.onWakeUp = null;
         this.onCommand = null;
         this.neonBorder = null;
@@ -524,20 +538,91 @@ class VoiceAssistant {
             return true;
         }
         
+        const textChars = textLower.replace(/\s+/g, '').split('');
+        const patternChars = patternLower.replace(/\s+/g, '').split('');
+        
         let matchCount = 0;
         let patternIndex = 0;
+        let consecutiveMatches = 0;
+        let maxConsecutive = 0;
         
-        for (let i = 0; i < textLower.length && patternIndex < patternLower.length; i++) {
-            if (textLower[i] === patternLower[patternIndex]) {
+        for (let i = 0; i < textChars.length && patternIndex < patternChars.length; i++) {
+            const textChar = textChars[i];
+            const patternChar = patternChars[patternIndex];
+            
+            if (textChar === patternChar) {
                 matchCount++;
+                consecutiveMatches++;
+                maxConsecutive = Math.max(maxConsecutive, consecutiveMatches);
                 patternIndex++;
+            } else if (this.isSimilarChar(textChar, patternChar)) {
+                matchCount += 0.8;
+                consecutiveMatches++;
+                maxConsecutive = Math.max(maxConsecutive, consecutiveMatches);
+                patternIndex++;
+            } else {
+                consecutiveMatches = 0;
             }
         }
         
-        const similarity = matchCount / patternLower.length;
-        if (similarity >= threshold) {
+        const similarity = matchCount / patternChars.length;
+        const consecutiveBonus = maxConsecutive >= 2 ? 0.1 : 0;
+        
+        if (similarity + consecutiveBonus >= threshold) {
             return true;
         }
+        
+        if (patternChars.length >= 3 && this.containsPartialSequence(textChars, patternChars)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    isSimilarChar(char1, char2) {
+        if (this.syllableMap[char1] && this.syllableMap[char1].includes(char2)) {
+            return true;
+        }
+        if (this.syllableMap[char2] && this.syllableMap[char2].includes(char1)) {
+            return true;
+        }
+        
+        const similarGroups = [
+            ['b', 'p', 'm', 'f'],
+            ['d', 't', 'n', 'l'],
+            ['g', 'k', 'h'],
+            ['j', 'q', 'x'],
+            ['z', 'c', 's'],
+            ['zh', 'ch', 'sh'],
+            ['a', 'o', 'e'],
+            ['i', 'u', 'ü']
+        ];
+        
+        for (const group of similarGroups) {
+            if (group.includes(char1) && group.includes(char2)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    containsPartialSequence(textChars, patternChars) {
+        let matchCount = 0;
+        let lastIndex = -1;
+        
+        for (let i = 0; i < patternChars.length; i++) {
+            const char = patternChars[i];
+            const index = textChars.indexOf(char, lastIndex + 1);
+            
+            if (index !== -1 && (lastIndex === -1 || index === lastIndex + 1 || index === lastIndex + 2)) {
+                matchCount++;
+                lastIndex = index;
+            }
+        }
+        
+        return matchCount >= Math.ceil(patternChars.length * 0.7);
+    }
         
         // 拼音相似匹配 - 处理发音相近的情况
         const pinyinMap = {
