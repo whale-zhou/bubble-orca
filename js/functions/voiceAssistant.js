@@ -75,173 +75,172 @@ class VoiceAssistant {
                 opacity: 1;
             }
             
-            /* 海浪边框 - 多层波浪效果 */
+            /* 海浪边框 - 此起彼伏效果 */
             #voice-neon-border .wave-border {
                 position: absolute;
             }
             
-            /* 顶部海浪 */
+            /* 顶部海浪 - 柔和淡色 */
             #voice-neon-border .wave-top {
                 top: 0;
                 left: 0;
                 right: 0;
-                height: 4px;
+                height: 3px;
                 background: linear-gradient(90deg, 
                     transparent 0%,
-                    #00ffff 15%,
-                    #ff00ff 30%,
-                    #00ffff 45%,
-                    #ff00ff 60%,
-                    #00ffff 75%,
-                    #ff00ff 90%,
+                    rgba(100, 200, 255, 0.4) 10%,
+                    rgba(180, 130, 255, 0.4) 25%,
+                    rgba(100, 200, 255, 0.5) 40%,
+                    rgba(180, 130, 255, 0.5) 55%,
+                    rgba(100, 200, 255, 0.4) 70%,
+                    rgba(180, 130, 255, 0.4) 85%,
                     transparent 100%
                 );
-                background-size: 200% 100%;
-                animation: waveFlowTop 2s linear infinite;
+                background-size: 300% 100%;
+                animation: waveFlowTop 3s ease-in-out infinite;
                 box-shadow: 
-                    0 0 20px #00ffff,
-                    0 0 40px #ff00ff,
-                    0 0 60px #00ffff;
+                    0 0 8px rgba(100, 200, 255, 0.3),
+                    0 0 15px rgba(180, 130, 255, 0.2);
             }
             
-            /* 底部海浪 */
+            /* 底部海浪 - 延迟启动，此起彼伏 */
             #voice-neon-border .wave-bottom {
                 bottom: 0;
                 left: 0;
                 right: 0;
-                height: 4px;
+                height: 3px;
                 background: linear-gradient(90deg, 
                     transparent 0%,
-                    #ff00ff 15%,
-                    #00ffff 30%,
-                    #ff00ff 45%,
-                    #00ffff 60%,
-                    #ff00ff 75%,
-                    #00ffff 90%,
+                    rgba(180, 130, 255, 0.4) 10%,
+                    rgba(100, 200, 255, 0.4) 25%,
+                    rgba(180, 130, 255, 0.5) 40%,
+                    rgba(100, 200, 255, 0.5) 55%,
+                    rgba(180, 130, 255, 0.4) 70%,
+                    rgba(100, 200, 255, 0.4) 85%,
                     transparent 100%
                 );
-                background-size: 200% 100%;
-                animation: waveFlowBottom 2s linear infinite;
+                background-size: 300% 100%;
+                animation: waveFlowBottom 3.5s ease-in-out infinite;
+                animation-delay: 0.8s;
                 box-shadow: 
-                    0 0 20px #ff00ff,
-                    0 0 40px #00ffff,
-                    0 0 60px #ff00ff;
+                    0 0 8px rgba(180, 130, 255, 0.3),
+                    0 0 15px rgba(100, 200, 255, 0.2);
             }
             
-            /* 左侧海浪 */
+            /* 左侧海浪 - 不同节奏 */
             #voice-neon-border .wave-left {
                 top: 0;
                 left: 0;
                 bottom: 0;
-                width: 4px;
+                width: 3px;
                 background: linear-gradient(180deg, 
                     transparent 0%,
-                    #ff00ff 15%,
-                    #00ffff 30%,
-                    #ff00ff 45%,
-                    #00ffff 60%,
-                    #ff00ff 75%,
-                    #00ffff 90%,
+                    rgba(180, 130, 255, 0.4) 10%,
+                    rgba(100, 200, 255, 0.4) 25%,
+                    rgba(180, 130, 255, 0.5) 40%,
+                    rgba(100, 200, 255, 0.5) 55%,
+                    rgba(180, 130, 255, 0.4) 70%,
+                    rgba(100, 200, 255, 0.4) 85%,
                     transparent 100%
                 );
-                background-size: 100% 200%;
-                animation: waveFlowLeft 2.5s linear infinite;
+                background-size: 100% 300%;
+                animation: waveFlowLeft 4s ease-in-out infinite;
+                animation-delay: 0.3s;
                 box-shadow: 
-                    0 0 20px #ff00ff,
-                    0 0 40px #00ffff,
-                    0 0 60px #ff00ff;
+                    0 0 8px rgba(180, 130, 255, 0.3),
+                    0 0 15px rgba(100, 200, 255, 0.2);
             }
             
-            /* 右侧海浪 */
+            /* 右侧海浪 - 不同节奏 */
             #voice-neon-border .wave-right {
                 top: 0;
                 right: 0;
                 bottom: 0;
-                width: 4px;
+                width: 3px;
                 background: linear-gradient(180deg, 
                     transparent 0%,
-                    #00ffff 15%,
-                    #ff00ff 30%,
-                    #00ffff 45%,
-                    #ff00ff 60%,
-                    #00ffff 75%,
-                    #ff00ff 90%,
+                    rgba(100, 200, 255, 0.4) 10%,
+                    rgba(180, 130, 255, 0.4) 25%,
+                    rgba(100, 200, 255, 0.5) 40%,
+                    rgba(180, 130, 255, 0.5) 55%,
+                    rgba(100, 200, 255, 0.4) 70%,
+                    rgba(180, 130, 255, 0.4) 85%,
                     transparent 100%
                 );
-                background-size: 100% 200%;
-                animation: waveFlowRight 2.5s linear infinite;
+                background-size: 100% 300%;
+                animation: waveFlowRight 3.8s ease-in-out infinite;
+                animation-delay: 1.1s;
                 box-shadow: 
-                    0 0 20px #00ffff,
-                    0 0 40px #ff00ff,
-                    0 0 60px #00ffff;
+                    0 0 8px rgba(100, 200, 255, 0.3),
+                    0 0 15px rgba(180, 130, 255, 0.2);
             }
             
-            /* 海浪流动动画 */
+            /* 海浪流动动画 - 柔和的ease-in-out */
             @keyframes waveFlowTop {
                 0% { background-position: 0% 0%; }
-                100% { background-position: 200% 0%; }
+                100% { background-position: 300% 0%; }
             }
             
             @keyframes waveFlowBottom {
-                0% { background-position: 200% 0%; }
+                0% { background-position: 300% 0%; }
                 100% { background-position: 0% 0%; }
             }
             
             @keyframes waveFlowLeft {
                 0% { background-position: 0% 0%; }
-                100% { background-position: 0% 200%; }
+                100% { background-position: 0% 300%; }
             }
             
             @keyframes waveFlowRight {
-                0% { background-position: 0% 200%; }
+                0% { background-position: 0% 300%; }
                 100% { background-position: 0% 0%; }
             }
             
-            /* 四角光晕装饰 */
+            /* 四角光晕装饰 - 柔和淡色 */
             #voice-neon-border .corner-glow {
                 position: absolute;
-                width: 60px;
-                height: 60px;
+                width: 50px;
+                height: 50px;
                 border-radius: 50%;
-                filter: blur(15px);
-                animation: cornerPulse 2s ease-in-out infinite;
+                filter: blur(20px);
+                animation: cornerPulse 3s ease-in-out infinite;
             }
             
             #voice-neon-border .corner-glow-tl {
-                top: -20px;
-                left: -20px;
-                background: radial-gradient(circle, #ff00ff 0%, transparent 70%);
+                top: -15px;
+                left: -15px;
+                background: radial-gradient(circle, rgba(180, 130, 255, 0.3) 0%, transparent 70%);
             }
             
             #voice-neon-border .corner-glow-tr {
-                top: -20px;
-                right: -20px;
-                background: radial-gradient(circle, #00ffff 0%, transparent 70%);
-                animation-delay: 0.5s;
+                top: -15px;
+                right: -15px;
+                background: radial-gradient(circle, rgba(100, 200, 255, 0.3) 0%, transparent 70%);
+                animation-delay: 0.7s;
             }
             
             #voice-neon-border .corner-glow-bl {
-                bottom: -20px;
-                left: -20px;
-                background: radial-gradient(circle, #00ffff 0%, transparent 70%);
-                animation-delay: 1s;
+                bottom: -15px;
+                left: -15px;
+                background: radial-gradient(circle, rgba(100, 200, 255, 0.3) 0%, transparent 70%);
+                animation-delay: 1.4s;
             }
             
             #voice-neon-border .corner-glow-br {
-                bottom: -20px;
-                right: -20px;
-                background: radial-gradient(circle, #ff00ff 0%, transparent 70%);
-                animation-delay: 1.5s;
+                bottom: -15px;
+                right: -15px;
+                background: radial-gradient(circle, rgba(180, 130, 255, 0.3) 0%, transparent 70%);
+                animation-delay: 2.1s;
             }
             
             @keyframes cornerPulse {
                 0%, 100% {
-                    opacity: 0.5;
+                    opacity: 0.3;
                     transform: scale(1);
                 }
                 50% {
-                    opacity: 1;
-                    transform: scale(1.3);
+                    opacity: 0.6;
+                    transform: scale(1.2);
                 }
             }
             
@@ -251,8 +250,8 @@ class VoiceAssistant {
                 top: 80px;
                 left: 50%;
                 transform: translateX(-50%);
-                background: rgba(0, 0, 0, 0.8);
-                border: 1px solid rgba(0, 255, 255, 0.5);
+                background: rgba(0, 0, 0, 0.7);
+                border: 1px solid rgba(100, 200, 255, 0.3);
                 border-radius: 30px;
                 padding: 10px 25px;
                 z-index: 10000;
@@ -260,8 +259,8 @@ class VoiceAssistant {
                 align-items: center;
                 gap: 10px;
                 box-shadow: 
-                    0 0 20px rgba(0, 255, 255, 0.3),
-                    0 0 40px rgba(255, 0, 255, 0.2);
+                    0 0 15px rgba(100, 200, 255, 0.2),
+                    0 0 30px rgba(180, 130, 255, 0.1);
                 backdrop-filter: blur(10px);
             }
             
@@ -288,17 +287,17 @@ class VoiceAssistant {
             
             @keyframes pulse {
                 0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.2); }
+                50% { transform: scale(1.1); }
             }
             
             #voice-status-toast .text {
-                color: #fff;
+                color: rgba(255, 255, 255, 0.9);
                 font-size: 14px;
                 font-weight: 500;
             }
             
             #voice-status-toast .transcript {
-                color: #00ffff;
+                color: rgba(100, 200, 255, 0.9);
                 font-size: 12px;
                 max-width: 200px;
                 overflow: hidden;
