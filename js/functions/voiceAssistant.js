@@ -517,6 +517,22 @@ class VoiceAssistant {
         this.hideTimeout = setTimeout(() => {
             this.hideNeonBorder();
         }, 15000);
+        
+        // 添加点击空白区域退出功能
+        this.clickToExitHandler = (e) => {
+            if (e.target === document.body || 
+                e.target.closest('#voice-neon-border') === null && 
+                e.target.closest('#voice-status-toast') === null &&
+                e.target.closest('.settings-panel') === null &&
+                e.target.closest('.modal') === null) {
+                this.hideNeonBorder();
+                console.log('🖱️ 点击空白区域退出语音助手');
+            }
+        };
+        
+        setTimeout(() => {
+            document.addEventListener('click', this.clickToExitHandler);
+        }, 300);
     }
     
     hideNeonBorder() {
@@ -531,6 +547,12 @@ class VoiceAssistant {
         if (this.hideTimeout) {
             clearTimeout(this.hideTimeout);
             this.hideTimeout = null;
+        }
+        
+        // 移除点击事件监听器
+        if (this.clickToExitHandler) {
+            document.removeEventListener('click', this.clickToExitHandler);
+            this.clickToExitHandler = null;
         }
     }
     
