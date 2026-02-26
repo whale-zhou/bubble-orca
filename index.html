@@ -242,8 +242,52 @@
                     <div>✊ 握拳 → 截图 (Alt+A)</div>
                     <div>🤏 捏合 → 放大</div>
                     <div>👌 张开 → 缩小</div>
-                    <div>� 单指/双指/手掌上下挥 → 滚动页面</div>
+                    <div>👆 滑动滚动</div>
                     <div>👏 拍手 → 唤醒语音助手</div>
+                </div>
+                
+                <!-- 各手势开关 -->
+                <div id="gesture-toggles" style="margin-top: 12px; padding-left: 44px; display: none;">
+                    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;">单独控制各手势：</div>
+                    <div class="setting-toggle" style="padding: 6px 0;">
+                        <div style="font-size: 13px;">✊ 握拳截图</div>
+                        <label class="toggle-switch" style="transform: scale(0.8);">
+                            <input type="checkbox" id="gesture-fist" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-toggle" style="padding: 6px 0;">
+                        <div style="font-size: 13px;">🤏 捏合放大</div>
+                        <label class="toggle-switch" style="transform: scale(0.8);">
+                            <input type="checkbox" id="gesture-pinch" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-toggle" style="padding: 6px 0;">
+                        <div style="font-size: 13px;">👌 张开缩小</div>
+                        <label class="toggle-switch" style="transform: scale(0.8);">
+                            <input type="checkbox" id="gesture-zoom-out" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-toggle" style="padding: 6px 0;">
+                        <div style="font-size: 13px;">👆 滑动滚动</div>
+                        <label class="toggle-switch" style="transform: scale(0.8);">
+                            <input type="checkbox" id="gesture-swipe" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-toggle" style="padding: 6px 0;">
+                        <div style="font-size: 13px;">👏 拍手唤醒</div>
+                        <label class="toggle-switch" style="transform: scale(0.8);">
+                            <input type="checkbox" id="gesture-clap" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="font-size: 11px; color: #6b7280; margin-top: 10px; padding-left: 44px; line-height: 1.6;">
+                    <div>快捷键：<span style="color: #64c8ff;">F1</span> 唤醒语音助手 | <span style="color: #64c8ff;">F2</span> 开关手势控制</div>
                 </div>
             </div>
             
