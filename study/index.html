@@ -52,12 +52,16 @@
     
     <main class="main-container">
         <!-- 左侧工具栏 -->
-        <aside class="tool-sidebar">
+        <aside class="tool-sidebar" id="tool-sidebar">
+            <div class="sidebar-toggle" id="sidebar-toggle">
+                <i class="fa fa-chevron-left"></i>
+            </div>
             <div class="tool-section">
                 <div class="tool-section-title">公式</div>
                 <div class="tool-buttons">
                     <button class="tool-btn" data-tool="formula-common">常用公式</button>
                     <button class="tool-btn" data-tool="formula-symbols">数学符号</button>
+                    <button class="tool-btn" data-tool="formula-greek">希腊字母</button>
                     <button class="tool-btn" data-tool="formula-custom">自定义</button>
                 </div>
             </div>
@@ -91,8 +95,28 @@
             <div class="tool-section">
                 <div class="tool-section-title">导出</div>
                 <div class="tool-buttons">
+                    <button class="tool-btn" data-tool="save-work">保存</button>
                     <button class="tool-btn" data-tool="export-png">导出PNG</button>
                     <button class="tool-btn" data-tool="export-code">导出代码</button>
+                </div>
+            </div>
+            
+            <div class="tool-section">
+                <div class="tool-section-title">3D</div>
+                <div class="tool-buttons">
+                    <button class="tool-btn" data-tool="3d-blocks">3D模块</button>
+                    <button class="tool-btn" data-tool="3d-rotate">旋转视图</button>
+                    <button class="tool-btn" data-tool="3d-reset">重置视角</button>
+                </div>
+            </div>
+            
+            <div class="tool-section">
+                <div class="tool-section-title">说明</div>
+                <div class="tool-buttons">
+                    <button class="tool-btn active" data-tool="help-overview">算法概述</button>
+                    <button class="tool-btn" data-tool="help-steps">步骤详解</button>
+                    <button class="tool-btn" data-tool="help-examples">示例演示</button>
+                    <button class="tool-btn" data-tool="help-faq">常见问题</button>
                 </div>
             </div>
         </aside>
@@ -121,34 +145,77 @@
                 <div class="panel-header">
                     <span class="panel-title">工作区</span>
                     <div class="panel-actions">
-                        <button class="small-btn" id="toggle-canvas">画布模式</button>
+                        <button class="small-btn active" id="toggle-canvas">画布模式</button>
                         <button class="small-btn" id="toggle-result">结果模式</button>
+                        <button class="small-btn" id="toggle-help">说明模式</button>
                     </div>
                 </div>
-                <div class="canvas-container" id="canvas-container">
-                    <canvas id="draw-canvas"></canvas>
-                    <div class="canvas-tools">
-                        <button class="canvas-tool" data-tool="pen" title="画笔">
-                            <i class="fa fa-pencil"></i>
+                <div class="canvas-content-wrapper">
+                    <div class="canvas-container" id="canvas-container">
+                        <canvas id="draw-canvas"></canvas>
+                        <span class="area-label">手写区</span>
+                        <div class="canvas-tools">
+                            <button class="canvas-tool active" data-tool="pen" title="画笔 (B)">
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                            <button class="canvas-tool" data-tool="eraser" title="橡皮擦 (E)">
+                                <i class="fa fa-eraser"></i>
+                            </button>
+                            <button class="canvas-tool" data-tool="move" title="移动 (V)">
+                                <i class="fa fa-arrows"></i>
+                            </button>
+                            <button class="canvas-tool" data-tool="text" title="文本 (T)">
+                                <i class="fa fa-font"></i>
+                            </button>
+                            <input type="color" id="pen-color" value="#000000" title="颜色">
+                            <label style="font-size:11px;color:var(--text-muted);">粗细:</label>
+                            <input type="range" id="pen-size" min="1" max="20" value="2" title="画笔粗细" style="width:50px;">
+                            <label id="eraser-size-label" style="font-size:11px;color:var(--text-muted);display:none;">橡皮:</label>
+                            <input type="range" id="eraser-size" min="5" max="50" value="20" title="橡皮擦大小" style="width:50px;display:none;">
+                            <button class="canvas-tool" id="clear-canvas" title="清空画布">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                        <button class="fullscreen-btn" id="fullscreen-canvas" title="全屏画布 (F11)">
+                            <i class="fa fa-expand"></i>
                         </button>
-                        <button class="canvas-tool" data-tool="eraser" title="橡皮擦">
-                            <i class="fa fa-eraser"></i>
-                        </button>
-                        <button class="canvas-tool" data-tool="text" title="文本">
-                            <i class="fa fa-font"></i>
-                        </button>
-                        <button class="canvas-tool" data-tool="formula" title="公式">
-                            <i class="fa fa-superscript"></i>
-                        </button>
-                        <input type="color" id="pen-color" value="#000000" title="颜色">
-                        <input type="range" id="pen-size" min="1" max="20" value="2" title="粗细">
-                        <button class="canvas-tool" id="clear-canvas" title="清空画布">
-                            <i class="fa fa-trash"></i>
-                        </button>
+                        <!-- 公式面板 -->
+                        <div class="formula-panel" id="formula-panel">
+                            <div class="formula-panel-header">
+                                <span>插入公式</span>
+                                <button class="close-btn" id="close-formula">&times;</button>
+                            </div>
+                            <div class="formula-tabs">
+                                <button class="formula-tab active" data-formula-type="common">常用公式</button>
+                                <button class="formula-tab" data-formula-type="symbols">数学符号</button>
+                                <button class="formula-tab" data-formula-type="greek">希腊字母</button>
+                                <button class="formula-tab" data-formula-type="operators">运算符</button>
+                            </div>
+                            <div class="formula-grid" id="formula-grid"></div>
+                        </div>
+                    </div>
+                    <!-- 图层管理 -->
+                    <div class="layers-panel-embedded">
+                        <div class="layers-header">
+                            <span>图层</span>
+                            <button class="layer-btn" id="add-layer" title="新增图层"><i class="fa fa-plus"></i></button>
+                        </div>
+                        <div class="layers-list" id="layers-list">
+                            <div class="layer-item active" data-layer="0">
+                                <span class="layer-name">图层 1</span>
+                                <div class="layer-actions">
+                                    <button class="layer-action-btn" title="锁定"><i class="fa fa-lock"></i></button>
+                                    <button class="layer-action-btn" title="删除"><i class="fa fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="result-container" id="result-container" style="display: none;">
                     <div class="result-content" id="result-content"></div>
+                </div>
+                <div class="help-container" id="help-container" style="display: none;">
+                    <div class="help-content" id="help-content"></div>
                 </div>
             </div>
             
@@ -233,6 +300,11 @@
             </div>
             
             <div class="settings-group">
+                <div class="settings-group-title">帮助</div>
+                <button class="small-btn" id="show-guide" style="width:100%;">显示新手引导</button>
+            </div>
+            
+            <div class="settings-group">
                 <div class="settings-group-title">模式切换</div>
                 <button class="switch-mode-btn" id="switch-to-browse">
                     切换到浏览模式
@@ -241,6 +313,26 @@
         </div>
     </div>
     
-    <script type="module" src="../js/study/main.js"></script>
+    <!-- 新手引导 -->
+    <div class="guide-overlay" id="guide-overlay" style="display:none;">
+        <div class="guide-card">
+            <h2>🐋 欢迎使用泡泡鲸密码箱学习模式</h2>
+            <p>这是一个帮助您学习和理解密码学算法的交互式工具。</p>
+            <ul>
+                <li><strong>输入区</strong>：在顶部输入框中输入您要处理的数据</li>
+                <li><strong>工作区</strong>：在中间区域手写笔记、查看结果或阅读算法说明</li>
+                <li><strong>输出区</strong>：在底部查看计算结果</li>
+                <li><strong>左侧工具栏</strong>：选择公式、动画、验证等功能</li>
+                <li><strong>顶部标签页</strong>：切换不同的算法进行学习</li>
+            </ul>
+            <p><strong>快速开始：</strong>选择一个算法 → 在输入区输入内容 → 点击"执行计算"</p>
+            <div class="guide-actions">
+                <button class="guide-btn guide-btn-primary" id="guide-start">开始使用</button>
+                <button class="guide-btn guide-btn-secondary" id="guide-dont-show">不再显示</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="../js/studyMain.js"></script>
 </body>
 </html>

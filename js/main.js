@@ -14,6 +14,7 @@ import { updateButtonStyles } from './utils.js';
 import { showSHA256Animation } from './functions/sha256Animation.js';
 import voiceAssistant from './functions/voiceAssistant.js';
 import gestureController from './functions/gestureController.js';
+import semanticParser from './functions/semanticParser.js';
 
 // 将 showSHA256Animation 暴露到全局
 window.showSHA256Animation = showSHA256Animation;
@@ -194,40 +195,153 @@ function initHotkeys() {
     });
 }
 
-// 处理语音命令
+// 处理语音命令 - 使用语义理解
 function handleVoiceCommand(command) {
-    const cmd = command.toLowerCase();
+    console.log('🧠 语义分析:', command);
     
-    if (cmd.includes('截图') || cmd.includes('截屏')) {
-        document.body.style.border = '5px solid #ff00ff';
-        setTimeout(() => document.body.style.border = '', 500);
-        voiceAssistant.speak('已截图');
-    } else if (cmd.includes('打开设置') || cmd.includes('设置')) {
-        const panel = document.getElementById('settings-panel');
-        if (panel) {
-            panel.classList.add('show');
-            voiceAssistant.speak('设置已打开');
+    const parsed = semanticParser.parse(command);
+    console.log('📊 解析结果:', parsed);
+    
+    if (parsed.confidence < 0.2) {
+        const suggestions = semanticParser.suggestCommand(command);
+        if (suggestions.length > 0) {
+            voiceAssistant.speak(`没听清楚，你是想说${suggestions[0].text}吗？`);
+        } else {
+            voiceAssistant.speak('抱歉，我没理解你的意思，请再说一次');
         }
-    } else if (cmd.includes('关闭')) {
-        const panel = document.getElementById('settings-panel');
-        if (panel) {
-            panel.classList.remove('show');
-            voiceAssistant.speak('已关闭');
-        }
-        voiceAssistant.hideNeonBorder();
-    } else if (cmd.includes('滚动') && (cmd.includes('上') || cmd.includes('顶部'))) {
+        return;
+    }
+    
+    switch (parsed.intent) {
+        case 'switch_algorithm':
+            handleSwitchAlgorithm(parsed.entities.algorithm);
+            break;
+            
+        case 'toggle_gesture':
+            handleToggleGesture(parsed.entities.action);
+            break;
+            
+        case 'calculate':
+            handleCalculate(parsed.entities.value);
+            break;
+            
+        case 'screenshot':
+            handleScreenshot();
+            break;
+            
+        case 'settings':
+            handleSettings(parsed.entities.action);
+            break;
+            
+        case 'scroll':
+            handleScroll(parsed.entities.direction);
+            break;
+            
+        case 'help':
+            handleHelp();
+            break;
+            
+        case 'close':
+            handleClose();
+            break;
+            
+        default:
+            voiceAssistant.speak('抱歉，我没理解你的意思');
+    }
+}
+
+function handleSwitchAlgorithm(algorithm) {
+    if (!algorithm) {
+        voiceAssistant.speak('请告诉我要切换到哪个算法');
+        return;
+    }
+    
+    const algoBtn = document.querySelector(`[data-algorithm="${algorithm}"], [onclick*="${algorithm}"]`);
+    if (algoBtn) {
+        algoBtn.click();
+        voiceAssistant.speakSwitch(algorithm);
+    } else {
+        voiceAssistant.speak(`抱歉，找不到${algorithm}算法`);
+    }
+}
+
+function handleToggleGesture(action) {
+    const gestureToggle = document.getElementById('toggle-gesture-control');
+    if (!gestureToggle) {
+        voiceAssistant.speak('手势控制功能不可用');
+        return;
+    }
+    
+    if (action === 'on' && !gestureToggle.checked) {
+        gestureToggle.checked = true;
+        gestureToggle.dispatchEvent(new Event('change'));
+        voiceAssistant.speakGestureToggle(true);
+    } else if (action === 'off' && gestureToggle.checked) {
+        gestureToggle.checked = false;
+        gestureToggle.dispatchEvent(new Event('change'));
+        voiceAssistant.speakGestureToggle(false);
+    } else if (!action) {
+        const newState = !gestureToggle.checked;
+        gestureToggle.checked = newState;
+        gestureToggle.dispatchEvent(new Event('change'));
+        voiceAssistant.speakGestureToggle(newState);
+    }
+}
+
+function handleCalculate(value) {
+    const inputArea = document.getElementById('input-area') || document.querySelector('textarea');
+    
+    if (value && inputArea) {
+        inputArea.value = value;
+    }
+    
+    const calcBtn = document.querySelector('[onclick*="calculate"], #calculate-btn, .calculate-btn, .btn-primary');
+    if (calcBtn) {
+        calcBtn.click();
+        voiceAssistant.speakCalculate(value);
+    }
+}
+
+function handleScreenshot() {
+    document.body.style.border = '5px solid #ff00ff';
+    setTimeout(() => document.body.style.border = '', 500);
+    voiceAssistant.speak('done');
+}
+
+function handleSettings(action) {
+    const panel = document.getElementById('settings-panel');
+    if (!panel) return;
+    
+    if (action === 'close') {
+        panel.classList.remove('show');
+        voiceAssistant.speak('done');
+    } else {
+        panel.classList.add('show');
+        voiceAssistant.speak('设置已打开');
+    }
+}
+
+function handleScroll(direction) {
+    if (direction === 'top') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         voiceAssistant.speak('已滚动到顶部');
-    } else if (cmd.includes('滚动') && (cmd.includes('下') || cmd.includes('底部'))) {
+    } else if (direction === 'bottom') {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         voiceAssistant.speak('已滚动到底部');
-    } else if (cmd.includes('计算') || cmd.includes('开始')) {
-        const calcBtn = document.querySelector('[onclick*="calculate"], #calculate-btn, .calculate-btn');
-        if (calcBtn) {
-            calcBtn.click();
-            voiceAssistant.speak('开始计算');
-        }
     }
+}
+
+function handleHelp() {
+    voiceAssistant.speak('我可以帮你切换算法、打开手势控制、执行计算、截图、打开设置等。请说出你的需求。');
+}
+
+function handleClose() {
+    const panel = document.getElementById('settings-panel');
+    if (panel) {
+        panel.classList.remove('show');
+    }
+    voiceAssistant.speak('done');
+    voiceAssistant.hideNeonBorder();
 }
 
 // 初始化应用
